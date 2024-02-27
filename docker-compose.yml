@@ -1,0 +1,34 @@
+version: '3.1'
+
+services:
+  mysql:
+    container_name: english_app_mysql
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: english_app
+      MYSQL_USER: phudhs
+      MYSQL_PASSWORD: 123456
+    ports:
+      - "3309:3306"
+    networks:
+      - my-network
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+  phpmyadmin:
+    image: phpmyadmin
+    restart: always
+    ports:
+      - 8000:80
+    networks:
+      - my-network
+    environment:
+      - PMA_ARBITRARY=1
+
+volumes:
+  mysql-data:
+
+networks:
+  my-network:
+    driver: bridge
