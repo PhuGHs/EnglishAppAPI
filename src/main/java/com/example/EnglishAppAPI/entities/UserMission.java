@@ -1,10 +1,7 @@
 package com.example.EnglishAppAPI.entities;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.security.core.userdetails.User;
 
 @Entity
@@ -12,6 +9,7 @@ import org.springframework.security.core.userdetails.User;
 @Getter
 @Setter
 @AllArgsConstructor
+@NoArgsConstructor
 @Builder
 public class UserMission {
     @Id
