@@ -1,36 +1,44 @@
 package com.example.EnglishAppAPI.entities;
 
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+
 import java.util.Date;
 
 @Entity
 @Table(name = "accounts")
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@Builder
 public class Account {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "account_id")
     private Long accountId;
+
     @ManyToOne
-    @JoinColumn(name = "userId")
+    @JoinColumn(name = "user_id")
     private UserEntity user;
+
     @ManyToOne
-    @JoinColumn(name = "roleId")
+    @JoinColumn(name = "role_id")
     private Role role;
-    private String username;
+
+    @Column(name = "email")
     private String email;
+
+    @Column(name = "password")
     private String password;
+
+    @Column(name = "created_at")
     private Date createdAt = new Date();
+
+    @Column(name = "updated_at")
     private Date updatedAt = new Date();
 
-    public Account(String username, String email, String password) {
-        this.username = username;
-        this.email = email;
-        this.password = password;
-    }
+    @Column(name = "is_active")
+    private boolean isActive = true;
 
     public Account(String email, String password) {
         this.email = email;
