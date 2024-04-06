@@ -3,10 +3,7 @@ package com.example.EnglishAppAPI.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 @Table(name = "discussions")
@@ -23,6 +20,12 @@ public class Discussion {
 
     @Column(name = "title", nullable = false)
     private String title;
+
+    @Column(name = "created_date")
+    private Date createdDate;
+
+    @Column(name = "updated_date")
+    private Date updatedDate;
 
     @ManyToOne
     @JoinColumn(name = "user_id")

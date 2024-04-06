@@ -1,6 +1,7 @@
 package com.example.EnglishAppAPI.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -49,8 +50,6 @@ public class UserEntity {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private Set<Answer> answers = new HashSet<>();
 
-
-
     @ManyToMany
     @JoinTable(
             name = "user_notifications",
@@ -62,15 +61,19 @@ public class UserEntity {
     @ManyToMany(mappedBy = "sentNotifications")
     private Set<UserEntity> receivedNotifications;
 
-    @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
     @JoinTable(name = "user_mission", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "mission_id"))
     private Set<Mission> missions = new HashSet<>();
 
-    @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
     @JoinTable(name = "participants", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "room_id"))
     private Set<LearningRoom> learningRooms = new HashSet<>();
 
-    @ManyToMany
+
+    @ManyToMany(mappedBy = "users")
+    private Set<MessageRoom> messageRooms = new HashSet<>();
+
+    @ManyToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
     @JoinTable(
             name = "user_interest",
             joinColumns = @JoinColumn(name = "user_id"),

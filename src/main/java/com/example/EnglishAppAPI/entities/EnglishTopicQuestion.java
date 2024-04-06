@@ -25,4 +25,9 @@ public class EnglishTopicQuestion {
     @ManyToOne
     @JoinColumn(name = "topic_id")
     private EnglishTopic topic;
+
+    public EnglishTopicQuestion(String questionName, String sampleAnswer) {
+        this.questionName = questionName;
+        this.sampleAnswer = sampleAnswer;
+    }
 }

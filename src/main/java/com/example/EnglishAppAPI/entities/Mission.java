@@ -31,4 +31,10 @@ public class Mission {
 
     @ManyToMany(mappedBy = "missions")
     private Set<UserEntity> users = new HashSet<>();
+
+    public Mission(String missionName, int pointsAwarded, Date missionDate) {
+        this.missionName = missionName;
+        this.pointsAwarded = pointsAwarded;
+        this.missionDate = missionDate;
+    }
 }

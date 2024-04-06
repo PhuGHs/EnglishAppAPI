@@ -24,4 +24,8 @@ public class Interest {
 
     @ManyToMany(mappedBy = "interests")
     private Set<UserEntity> users = new HashSet<>();
+
+    public Interest(String interestName) {
+        this.interestName = interestName;
+    }
 }
