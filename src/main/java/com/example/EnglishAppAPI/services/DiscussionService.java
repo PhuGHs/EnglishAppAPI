@@ -36,7 +36,7 @@ public class DiscussionService implements IDiscussionService {
 
     @Override
     public ResponseEntity<ApiResponse> getTopDiscussions() {
-        List<Discussion> discussions = discussionRepository.findTop5ByOrderByAnswersSizeDesc();
+        List<Discussion> discussions = discussionRepository.findTop5ByOrderByCreatedDateDesc();
         return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse("Successfully", "Get top 5 sucessfully", discussions));
     }
 

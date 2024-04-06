@@ -1,5 +1,6 @@
 package com.example.EnglishAppAPI.controllers;
 
+import com.example.EnglishAppAPI.dtos.AnswerDto;
 import com.example.EnglishAppAPI.entities.Answer;
 import com.example.EnglishAppAPI.models.ApiResponse;
 import com.example.EnglishAppAPI.services.AnswerService;
@@ -20,13 +21,13 @@ public class AnswerController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<ApiResponse> createNewAnswer() {
-        return answerService.createNewAnswer();
+    public ResponseEntity<ApiResponse> createNewAnswer(@RequestBody AnswerDto answerDto) {
+        return answerService.createNewAnswer(answerDto);
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<ApiResponse> editAnAnswer(@PathVariable Long id) {
-        return answerService.editAnAnswer();
+    public ResponseEntity<ApiResponse> editAnAnswer(@PathVariable Long id, @RequestBody AnswerDto answerDto) {
+        return answerService.editAnAnswer(id, answerDto);
     }
 
     @DeleteMapping("/delete/{id}")

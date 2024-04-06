@@ -21,7 +21,7 @@ public class DiscussionController {
         return discussionService.addNewDiscussion(request);
     }
 
-    @PutMapping("/${id}/edit-discussion")
+    @PutMapping("/{id}/edit-discussion")
     public ResponseEntity<ApiResponse> editADiscussion(@PathVariable Long id, @RequestBody DiscussionDto request) {
         return discussionService.updateDiscussion(id, request);
     }

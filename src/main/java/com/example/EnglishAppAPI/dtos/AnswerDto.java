@@ -10,7 +10,6 @@ import java.util.Date;
 @Getter
 @Setter
 public class AnswerDto {
-    private Long id;
     private Long discussionId;
     private Long userId;
     private String answerText;
