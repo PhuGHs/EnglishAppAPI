@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 public class AnswerController {
     @Autowired
     private AnswerService answerService;
-    @GetMapping("/")
+    @GetMapping("")
     public Page<Answer> getAllAnswers(@RequestParam Long discussionId, @RequestParam int pageNumber, @RequestParam int pageSize, @RequestParam(defaultValue = "createdDate") String sortBy) {
         return answerService.getAllAnswers(discussionId, pageNumber, pageSize, sortBy);
     }

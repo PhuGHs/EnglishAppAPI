@@ -6,6 +6,7 @@ import com.example.EnglishAppAPI.entities.Discussion;
 import com.example.EnglishAppAPI.entities.UserEntity;
 import com.example.EnglishAppAPI.exceptions.NotFoundException;
 import com.example.EnglishAppAPI.models.ApiResponse;
+import com.example.EnglishAppAPI.models.ApiResponseStatus;
 import com.example.EnglishAppAPI.repositories.AnswerRepository;
 import com.example.EnglishAppAPI.repositories.DiscussionRepository;
 import com.example.EnglishAppAPI.repositories.UserRepository;
@@ -47,30 +48,30 @@ public class AnswerService implements IAnswerService{
                 .createdAt(new Date())
                 .updatedAt(new Date())
                 .build();
-        return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse("Successfully", "Answered the discussion successfully", answer));
+        return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(ApiResponseStatus.SUCCESS, "Answered the discussion successfully", answer));
     }
 
     @Override
     public ResponseEntity<ApiResponse> editAnAnswer(Long id, AnswerDto answerDto) {
         if (discussionRepository.existsById(answerDto.getDiscussionId())) {
-            return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse("fail", "the discussion id is not found", ""));
+            return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(ApiResponseStatus.SUCCESS, "the discussion id is not found", ""));
         }
         if (userRepository.existsById(answerDto.getUserId())) {
-            return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse("fail", "the user id is not found", ""));
+            return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(ApiResponseStatus.SUCCESS, "the user id is not found", ""));
         }
         Answer answer = answerRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("answer is not found"));
         answer.setAnswerText(answer.getAnswerText());
         answer.setUpdatedAt(new Date());
-        return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse("Successfully", "Edited the answer successfully", answer));
+        return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(ApiResponseStatus.SUCCESS, "Edited the answer successfully", answer));
     }
 
     @Override
     public ResponseEntity<ApiResponse> deleteAnswer(Long answerId) {
         if(!answerRepository.existsById(answerId)) {
-            return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse("fail", "the id is not found", ""));
+            return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(ApiResponseStatus.FAIL, "the id is not found", ""));
         }
         answerRepository.deleteById(answerId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse("success", "delete successfully", ""));
+        return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(ApiResponseStatus.SUCCESS, "delete successfully", ""));
     }
 }

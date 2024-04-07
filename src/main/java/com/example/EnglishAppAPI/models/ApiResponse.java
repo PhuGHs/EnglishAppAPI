@@ -8,13 +8,14 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class ApiResponse {
-    private String status;
+    private ApiResponseStatus status;
     private String message;
     private Object data;
 
-    public ApiResponse(String status, String message, Object data) {
+    public ApiResponse(ApiResponseStatus status, String message, Object data) {
         this.status = status;
         this.message = message;
         this.data = data;
     }
 }
+

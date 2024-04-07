@@ -6,6 +6,7 @@ import com.example.EnglishAppAPI.entities.EnglishTopic;
 import com.example.EnglishAppAPI.entities.UserEntity;
 import com.example.EnglishAppAPI.exceptions.NotFoundException;
 import com.example.EnglishAppAPI.models.ApiResponse;
+import com.example.EnglishAppAPI.models.ApiResponseStatus;
 import com.example.EnglishAppAPI.repositories.DiscussionRepository;
 import com.example.EnglishAppAPI.repositories.EnglishTopicRepository;
 import com.example.EnglishAppAPI.repositories.UserRepository;
@@ -37,7 +38,7 @@ public class DiscussionService implements IDiscussionService {
     @Override
     public ResponseEntity<ApiResponse> getTopDiscussions() {
         List<Discussion> discussions = discussionRepository.findTop5ByOrderByCreatedDateDesc();
-        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse("Successfully", "Get top 5 sucessfully", discussions));
+        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(ApiResponseStatus.SUCCESS, "Get top 5 sucessfully", discussions));
     }
 
     @Override
@@ -63,7 +64,7 @@ public class DiscussionService implements IDiscussionService {
                 .answers(new HashSet<>())
                 .build();
         discussionRepository.save(discussion);
-        return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse("Successfully", "Created a new discussion", discussion));
+        return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(ApiResponseStatus.SUCCESS, "Created a new discussion", discussion));
     }
 
     @Override
@@ -73,12 +74,12 @@ public class DiscussionService implements IDiscussionService {
         EnglishTopic topic = englishTopicRepository.findById(discussion.getEnglishTopicId())
                 .orElseThrow(() -> new NotFoundException("Can't find the topic with the provided id"));
         dis.setTopic(topic);
-        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse("Successfully", "discussion was updated", dis));
+        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(ApiResponseStatus.SUCCESS, "discussion was updated", dis));
     }
 
     @Override
     public ResponseEntity<ApiResponse> deleteDiscussion(Long discussionId) {
         discussionRepository.deleteById(discussionId);
-        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse("Successfully", "discussion was deleted", ""));
+        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(ApiResponseStatus.SUCCESS, "discussion was deleted", ""));
     }
 }

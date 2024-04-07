@@ -1,9 +1,10 @@
 package com.example.EnglishAppAPI.repositories;
 
-import com.example.EnglishAppAPI.entities.Notification;
+import com.example.EnglishAppAPI.entities.ShortStory;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface NotificationRepository extends JpaRepository<Notification, Long> {
+public interface ShortStoryRepository extends JpaRepository<ShortStory, Long> {
+
 }

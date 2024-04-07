@@ -26,7 +26,7 @@ public class DiscussionController {
         return discussionService.updateDiscussion(id, request);
     }
 
-    @GetMapping("/")
+    @GetMapping("")
     public Page<Discussion> getAllDiscussions(@RequestParam(defaultValue = "0") int pageNumber, @RequestParam(defaultValue = "10") int pageSize, @RequestParam(defaultValue = "id") String sortBy) {
         return discussionService.getAllDiscussions(pageNumber, pageSize, sortBy);
     }
