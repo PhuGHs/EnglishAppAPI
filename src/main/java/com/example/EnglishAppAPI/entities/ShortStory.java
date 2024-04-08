@@ -17,6 +17,8 @@ public class ShortStory {
     private Long id;
     @Column(nullable = false, name = "title")
     private String title;
+    @Column(nullable = false, name = "paragraph")
+    private String paragraph;
     @Column(name = "number_of_likes")
     private int numberOfLikes = 0;
     @Column(name = "image")
