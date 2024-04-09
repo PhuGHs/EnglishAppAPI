@@ -15,6 +15,14 @@ public class Report {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToOne
+    @JoinColumn(name = "reporter_id")
+    private UserEntity reporter;
+
+    @ManyToOne
+    @JoinColumn(name = "reported_id")
+    private UserEntity reported;
+
     @Column(name = "evidence_image")
     private String evidenceImage;
 
@@ -22,5 +30,5 @@ public class Report {
     private String content;
 
     @Column(name = "is_solved")
-    private boolean isSolved;
+    private boolean isSolved = false;
 }

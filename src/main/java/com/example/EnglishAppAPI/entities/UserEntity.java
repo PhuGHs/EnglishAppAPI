@@ -39,6 +39,9 @@ public class UserEntity {
     @Column(name = "followers_count")
     private int followersCount = 0;
 
+    @Column(name = "is_banned")
+    private boolean isBanned = false;
+
     @ManyToOne
     @JoinColumn(name = "level_id")
     private EnglishLevel englishLevel;
@@ -47,29 +50,50 @@ public class UserEntity {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private Set<Discussion> discussions = new HashSet<>();
 
+    @JsonIgnore
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private Set<Answer> answers = new HashSet<>();
 
-    @ManyToMany
+    @JsonIgnore
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
-            name = "user_notifications",
-            joinColumns = @JoinColumn(name = "sender_id"),
-            inverseJoinColumns = @JoinColumn(name = "receiver_id")
+            name = "followers",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "follower_id")
     )
-    private Set<UserEntity> sentNotifications;
+    private Set<UserEntity> followers = new HashSet<>();
 
-    @ManyToMany(mappedBy = "sentNotifications")
-    private Set<UserEntity> receivedNotifications;
+    @JsonIgnore
+    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "followers")
+    private Set<UserEntity> following = new HashSet<>();
 
+    @JsonIgnore
+    @OneToMany(mappedBy = "reporter", cascade = CascadeType.ALL)
+    private Set<Report> reportsMade = new HashSet<>();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "reported", cascade = CascadeType.ALL)
+    private Set<Report> reportsReceived = new HashSet<>();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "receiver")
+    private Set<Notification> notifications;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "sender")
+    private Set<Notification> sentNotifications;
+
+    @JsonIgnore
     @ManyToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
     @JoinTable(name = "user_mission", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "mission_id"))
     private Set<Mission> missions = new HashSet<>();
 
+    @JsonIgnore
     @ManyToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
     @JoinTable(name = "participants", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "room_id"))
     private Set<LearningRoom> learningRooms = new HashSet<>();
 
-
+    @JsonIgnore
     @ManyToMany(mappedBy = "users")
     private Set<MessageRoom> messageRooms = new HashSet<>();
 

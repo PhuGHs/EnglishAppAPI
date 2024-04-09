@@ -1,5 +1,6 @@
 package com.example.EnglishAppAPI.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,6 +23,7 @@ public class Interest {
     @Column(name = "interest_name")
     private String interestName;
 
+    @JsonIgnore
     @ManyToMany(mappedBy = "interests")
     private Set<UserEntity> users = new HashSet<>();
 
