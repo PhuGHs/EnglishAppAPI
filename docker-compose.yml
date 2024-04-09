@@ -20,7 +20,7 @@ services:
     image: phpmyadmin
     restart: always
     ports:
-      - "8000:80"
+      - "7000:80"
     networks:
       - my-network
     environment:

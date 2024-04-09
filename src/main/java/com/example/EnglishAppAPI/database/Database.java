@@ -56,14 +56,14 @@ public class Database {
         return new CommandLineRunner() {
             @Override
             public void run(String... args) throws Exception {
-//                if (!roleRepository.existsByRoleName("USER")) {
-//                    Role userRole = new Role("USER");
-//                    roleRepository.save(userRole);
-//                }
-//                if (!roleRepository.existsByRoleName("ADMIN")) {
-//                    Role adminRole = new Role("ADMIN");
-//                    roleRepository.save(adminRole);
-//                }
+                if (!roleRepository.existsByRoleName("USER")) {
+                    Role userRole = new Role("USER");
+                    roleRepository.save(userRole);
+                }
+                if (!roleRepository.existsByRoleName("ADMIN")) {
+                    Role adminRole = new Role("ADMIN");
+                    roleRepository.save(adminRole);
+                }
 //
 //                EnglishLevel A1 = new EnglishLevel("A1 Elementary", "If a person is at A0, this is a beginner with the ability to say and understand just a few words or phrases, or he/she may have no knowledge of English at all.");
 //                EnglishLevel A2 = new EnglishLevel("A2 Pre Intermediate", "If a person is at A0, this is a beginner with the ability to say and understand just a few words or phrases, or he/she may have no knowledge of English at all.");

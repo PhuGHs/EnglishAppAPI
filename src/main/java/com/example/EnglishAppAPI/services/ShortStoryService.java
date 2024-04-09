@@ -25,6 +25,7 @@ public class ShortStoryService implements IShortStoryService {
                 .paragraph(shortStoryDto.getParagraph())
                 .image(shortStoryDto.getImage())
                 .build();
+        shortStoryRepository.save(shortStory);
         return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(ApiResponseStatus.SUCCESS, "create short story", shortStory));
     }
 
@@ -44,6 +45,7 @@ public class ShortStoryService implements IShortStoryService {
         shortStory.setTitle(shortStoryDto.getTitle());
         shortStory.setParagraph(shortStoryDto.getParagraph());
         shortStory.setImage(shortStoryDto.getImage());
+        shortStoryRepository.save(shortStory);
         return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(ApiResponseStatus.SUCCESS, "Update a short story", shortStory));
     }
 

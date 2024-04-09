@@ -20,9 +20,7 @@ public class InterestService implements IInterestService {
     private UserRepository userRepository;
     @Override
     public ResponseEntity<?> createNewInterest(String interestName) {
-        Interest interest = Interest.builder()
-                .interestName(interestName)
-                .build();
+        Interest interest = new Interest(interestName);
         interestRepository.save(interest);
         return ResponseEntity.status(HttpStatus.CREATED).body("created successfully");
     }

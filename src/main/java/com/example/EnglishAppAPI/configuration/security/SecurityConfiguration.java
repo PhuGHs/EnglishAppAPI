@@ -33,16 +33,18 @@ public class SecurityConfiguration {
                     httpSecurityHeadersConfigurer.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable);
                 })
                 .authorizeHttpRequests(req -> req
-                        .requestMatchers("/swagger/**").permitAll()
-                        .requestMatchers("/api/v1/auth/**").permitAll()
-                        .requestMatchers("/h2-console/**").permitAll()
-                        .requestMatchers("/api/v1/admin/**").hasAuthority("ADMIN")
-                        .requestMatchers("/api/v1/user/**").hasAnyAuthority("USER", "ADMIN")
-                        .anyRequest().authenticated())
-                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .exceptionHandling(eh -> eh.authenticationEntryPoint(jwtAuthEntryPoint))
-                .addFilterBefore(getJwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
+                        .anyRequest().permitAll())
                 .build();
+//                        .requestMatchers("/swagger/**").permitAll()
+//                        .requestMatchers("/api/v1/**").permitAll()
+//                        .requestMatchers("/h2-console/**").permitAll()
+//                        .requestMatchers("/api/v1/admin/**").hasAuthority("ADMIN")
+//                        .requestMatchers("/api/v1/user/**").hasAnyAuthority("USER", "ADMIN")
+//                        .anyRequest().authenticated())
+//                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+//                .exceptionHandling(eh -> eh.authenticationEntryPoint(jwtAuthEntryPoint))
+//                .addFilterBefore(getJwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
+//                .build();
     }
 
     @Bean

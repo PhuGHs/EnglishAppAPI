@@ -4,6 +4,7 @@ import com.example.EnglishAppAPI.dtos.LoginDto;
 import com.example.EnglishAppAPI.dtos.RegisterDto;
 import com.example.EnglishAppAPI.entities.UserEntity;
 import com.example.EnglishAppAPI.models.ApiResponse;
+import com.example.EnglishAppAPI.services.AccountService;
 import com.example.EnglishAppAPI.services.IAccountService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,11 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @Validated
 public class AuthController {
     @Autowired
-    private final IAccountService accountService;
-
-    public AuthController(IAccountService accountService) {
-        this.accountService = accountService;
-    }
+    private AccountService accountService;
 
     @RequestMapping(value = "register", method = RequestMethod.POST)
     public ResponseEntity<ApiResponse> register(@Valid @RequestBody RegisterDto registerDto) {

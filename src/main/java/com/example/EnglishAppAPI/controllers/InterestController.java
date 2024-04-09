@@ -16,7 +16,7 @@ public class InterestController {
     @Autowired
     private InterestService interestService;
     @PostMapping("/insert-new")
-    public ResponseEntity<?> insertInterests(@NotEmpty @PathVariable String interestName) {
+    public ResponseEntity<?> insertInterests(@NotEmpty @RequestBody String interestName) {
         return interestService.createNewInterest(interestName);
     }
 
