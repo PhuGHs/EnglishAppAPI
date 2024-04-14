@@ -1,13 +1,13 @@
 package com.example.EnglishAppAPI.services;
 
-import com.example.EnglishAppAPI.dtos.EnglishTopicDto;
-import com.example.EnglishAppAPI.dtos.EnglishTopicQuestionDto;
+import com.example.EnglishAppAPI.mapstruct.dtos.EnglishTopicDto;
+import com.example.EnglishAppAPI.mapstruct.dtos.EnglishTopicQuestionDto;
 import com.example.EnglishAppAPI.entities.EnglishLevel;
 import com.example.EnglishAppAPI.entities.EnglishTopic;
 import com.example.EnglishAppAPI.entities.EnglishTopicQuestion;
 import com.example.EnglishAppAPI.exceptions.NotFoundException;
-import com.example.EnglishAppAPI.models.ApiResponse;
-import com.example.EnglishAppAPI.models.ApiResponseStatus;
+import com.example.EnglishAppAPI.responses.ApiResponse;
+import com.example.EnglishAppAPI.responses.ApiResponseStatus;
 import com.example.EnglishAppAPI.repositories.EnglishLevelRepository;
 import com.example.EnglishAppAPI.repositories.EnglishTopicQuestionRepository;
 import com.example.EnglishAppAPI.repositories.EnglishTopicRepository;

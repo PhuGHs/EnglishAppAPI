@@ -3,6 +3,8 @@ package com.example.EnglishAppAPI.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "reports")
 @Getter
@@ -31,4 +33,8 @@ public class Report {
 
     @Column(name = "is_solved")
     private boolean isSolved = false;
+
+    @Column(name = "created_at")
+    @Temporal(TemporalType.TIMESTAMP)
+    private LocalDateTime createdDate = LocalDateTime.now();
 }

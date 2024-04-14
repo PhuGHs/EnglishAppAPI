@@ -2,7 +2,10 @@ package com.example.EnglishAppAPI.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.cglib.core.Local;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -24,7 +27,8 @@ public class LearningRoom {
     private String roomName;
 
     @Column(name = "created_at", nullable = false)
-    private Date createdAt;
+    @Temporal(TemporalType.TIMESTAMP)
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(name = "scheduled_to")
     private Date scheduledTo;

@@ -3,6 +3,7 @@ package com.example.EnglishAppAPI.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Entity
@@ -26,12 +27,14 @@ public class Answer {
     @JoinColumn(name = "user_id")
     private UserEntity user;
 
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "answer_text", nullable = false)
     private String answerText;
 
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_at")
-    private Date createdAt;
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(name = "updated_at")
-    private Date updatedAt;
+    private LocalDateTime updatedAt;
 }

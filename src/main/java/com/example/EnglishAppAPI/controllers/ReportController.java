@@ -1,7 +1,7 @@
 package com.example.EnglishAppAPI.controllers;
 
-import com.example.EnglishAppAPI.dtos.ReportDto;
-import com.example.EnglishAppAPI.models.ApiResponse;
+import com.example.EnglishAppAPI.mapstruct.dtos.ReportDto;
+import com.example.EnglishAppAPI.responses.ApiResponse;
 import com.example.EnglishAppAPI.services.ReportService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

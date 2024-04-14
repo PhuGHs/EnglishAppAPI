@@ -1,11 +1,10 @@
 package com.example.EnglishAppAPI.services;
 
-import com.example.EnglishAppAPI.dtos.EnglishTopicDto;
-import com.example.EnglishAppAPI.dtos.EnglishTopicQuestionDto;
-import com.example.EnglishAppAPI.models.ApiResponse;
+import com.example.EnglishAppAPI.mapstruct.dtos.EnglishTopicDto;
+import com.example.EnglishAppAPI.mapstruct.dtos.EnglishTopicQuestionDto;
+import com.example.EnglishAppAPI.responses.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 @Component
 public interface IEnglishTopicService {

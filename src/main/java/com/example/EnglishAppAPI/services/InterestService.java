@@ -3,7 +3,7 @@ package com.example.EnglishAppAPI.services;
 import com.example.EnglishAppAPI.entities.Interest;
 import com.example.EnglishAppAPI.entities.UserEntity;
 import com.example.EnglishAppAPI.exceptions.NotFoundException;
-import com.example.EnglishAppAPI.models.ApiResponse;
+import com.example.EnglishAppAPI.responses.ApiResponse;
 import com.example.EnglishAppAPI.repositories.InterestRepository;
 import com.example.EnglishAppAPI.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;

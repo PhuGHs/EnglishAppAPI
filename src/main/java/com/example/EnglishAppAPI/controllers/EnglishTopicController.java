@@ -1,8 +1,8 @@
 package com.example.EnglishAppAPI.controllers;
 
-import com.example.EnglishAppAPI.dtos.EnglishTopicDto;
-import com.example.EnglishAppAPI.dtos.EnglishTopicQuestionDto;
-import com.example.EnglishAppAPI.models.ApiResponse;
+import com.example.EnglishAppAPI.mapstruct.dtos.EnglishTopicDto;
+import com.example.EnglishAppAPI.mapstruct.dtos.EnglishTopicQuestionDto;
+import com.example.EnglishAppAPI.responses.ApiResponse;
 import com.example.EnglishAppAPI.services.EnglishTopicService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

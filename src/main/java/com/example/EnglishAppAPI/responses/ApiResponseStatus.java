@@ -1,4 +1,4 @@
-package com.example.EnglishAppAPI.models;
+package com.example.EnglishAppAPI.responses;
 
 public enum ApiResponseStatus {
     SUCCESS,

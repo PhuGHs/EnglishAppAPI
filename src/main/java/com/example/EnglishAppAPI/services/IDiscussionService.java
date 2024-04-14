@@ -1,13 +1,11 @@
 package com.example.EnglishAppAPI.services;
 
-import com.example.EnglishAppAPI.dtos.DiscussionDto;
+import com.example.EnglishAppAPI.mapstruct.dtos.DiscussionDto;
 import com.example.EnglishAppAPI.entities.Discussion;
-import com.example.EnglishAppAPI.models.ApiResponse;
+import com.example.EnglishAppAPI.responses.ApiResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-
-import java.awt.print.Pageable;
 
 @Component
 public interface IDiscussionService {

@@ -1,20 +1,19 @@
 package com.example.EnglishAppAPI.services;
 
 import com.example.EnglishAppAPI.configuration.security.JwtGenerator;
-import com.example.EnglishAppAPI.dtos.LoginDto;
-import com.example.EnglishAppAPI.dtos.RegisterDto;
+import com.example.EnglishAppAPI.mapstruct.dtos.LoginDto;
+import com.example.EnglishAppAPI.mapstruct.dtos.RegisterDto;
 import com.example.EnglishAppAPI.entities.Account;
 import com.example.EnglishAppAPI.entities.Role;
 import com.example.EnglishAppAPI.entities.UserEntity;
 import com.example.EnglishAppAPI.exceptions.NotFoundException;
 import com.example.EnglishAppAPI.exceptions.UnauthorizedException;
-import com.example.EnglishAppAPI.models.ApiResponse;
-import com.example.EnglishAppAPI.models.ApiResponseStatus;
-import com.example.EnglishAppAPI.models.AuthResponse;
+import com.example.EnglishAppAPI.responses.ApiResponse;
+import com.example.EnglishAppAPI.responses.ApiResponseStatus;
+import com.example.EnglishAppAPI.responses.AuthResponse;
 import com.example.EnglishAppAPI.repositories.AccountRepository;
 import com.example.EnglishAppAPI.repositories.RoleRepository;
 import com.example.EnglishAppAPI.repositories.UserRepository;
-import org.aspectj.weaver.ast.Not;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

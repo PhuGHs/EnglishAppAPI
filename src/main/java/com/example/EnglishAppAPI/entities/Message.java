@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.userdetails.User;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Entity
@@ -38,7 +39,8 @@ public class Message {
     private boolean isRead;
 
     @Column(name = "created_at")
-    private Date createdAt;
+    @Temporal(TemporalType.TIMESTAMP)
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(name = "image")
     private String image;

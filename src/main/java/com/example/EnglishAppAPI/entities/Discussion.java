@@ -2,7 +2,9 @@ package com.example.EnglishAppAPI.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.cglib.core.Local;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Entity
@@ -22,10 +24,12 @@ public class Discussion {
     private String title;
 
     @Column(name = "created_date")
-    private Date createdDate;
+    @Temporal(TemporalType.TIMESTAMP)
+    private LocalDateTime createdDate = LocalDateTime.now();
 
     @Column(name = "updated_date")
-    private Date updatedDate;
+    @Temporal(TemporalType.TIMESTAMP)
+    private LocalDateTime updatedDate = LocalDateTime.now();
 
     @ManyToOne
     @JoinColumn(name = "user_id")

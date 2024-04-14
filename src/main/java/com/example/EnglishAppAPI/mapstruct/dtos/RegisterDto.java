@@ -1,4 +1,4 @@
-package com.example.EnglishAppAPI.dtos;
+package com.example.EnglishAppAPI.mapstruct.dtos;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

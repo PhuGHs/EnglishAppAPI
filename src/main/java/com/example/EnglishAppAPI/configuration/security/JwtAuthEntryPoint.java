@@ -1,7 +1,6 @@
 package com.example.EnglishAppAPI.configuration.security;
 
 import com.example.EnglishAppAPI.exceptions.ErrorResponse;
-import com.example.EnglishAppAPI.models.ApiResponse;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

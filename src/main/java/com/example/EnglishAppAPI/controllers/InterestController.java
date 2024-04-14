@@ -1,7 +1,6 @@
 package com.example.EnglishAppAPI.controllers;
 
 import com.example.EnglishAppAPI.entities.Interest;
-import com.example.EnglishAppAPI.models.ApiResponse;
 import com.example.EnglishAppAPI.services.InterestService;
 import jakarta.validation.constraints.NotEmpty;
 import org.springframework.beans.factory.annotation.Autowired;

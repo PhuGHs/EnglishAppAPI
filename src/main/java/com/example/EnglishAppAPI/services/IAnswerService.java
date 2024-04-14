@@ -1,8 +1,8 @@
 package com.example.EnglishAppAPI.services;
 
-import com.example.EnglishAppAPI.dtos.AnswerDto;
+import com.example.EnglishAppAPI.mapstruct.dtos.AnswerDto;
 import com.example.EnglishAppAPI.entities.Answer;
-import com.example.EnglishAppAPI.models.ApiResponse;
+import com.example.EnglishAppAPI.responses.ApiResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;

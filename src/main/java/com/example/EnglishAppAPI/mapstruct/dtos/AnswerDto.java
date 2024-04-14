@@ -1,4 +1,4 @@
-package com.example.EnglishAppAPI.dtos;
+package com.example.EnglishAppAPI.mapstruct.dtos;
 
 import lombok.Data;
 import lombok.Getter;

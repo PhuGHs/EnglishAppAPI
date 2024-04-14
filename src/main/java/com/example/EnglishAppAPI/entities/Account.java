@@ -2,7 +2,10 @@ package com.example.EnglishAppAPI.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.cglib.core.Local;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Entity
@@ -33,10 +36,12 @@ public class Account {
     private String password;
 
     @Column(name = "created_at")
-    private Date createdAt = new Date();
+    @Temporal(TemporalType.TIMESTAMP)
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(name = "updated_at")
-    private Date updatedAt = new Date();
+    @Temporal(TemporalType.TIMESTAMP)
+    private LocalDateTime updatedAt = LocalDateTime.now();
 
     @Column(name = "is_active")
     private boolean isActive = true;

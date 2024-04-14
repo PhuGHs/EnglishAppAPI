@@ -1,7 +1,7 @@
 package com.example.EnglishAppAPI.services;
 
-import com.example.EnglishAppAPI.dtos.ShortStoryDto;
-import com.example.EnglishAppAPI.models.ApiResponse;
+import com.example.EnglishAppAPI.mapstruct.dtos.ShortStoryDto;
+import com.example.EnglishAppAPI.responses.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 

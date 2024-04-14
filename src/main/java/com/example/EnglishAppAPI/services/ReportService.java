@@ -1,11 +1,11 @@
 package com.example.EnglishAppAPI.services;
 
-import com.example.EnglishAppAPI.dtos.ReportDto;
+import com.example.EnglishAppAPI.mapstruct.dtos.ReportDto;
 import com.example.EnglishAppAPI.entities.Report;
 import com.example.EnglishAppAPI.entities.UserEntity;
 import com.example.EnglishAppAPI.exceptions.NotFoundException;
-import com.example.EnglishAppAPI.models.ApiResponse;
-import com.example.EnglishAppAPI.models.ApiResponseStatus;
+import com.example.EnglishAppAPI.responses.ApiResponse;
+import com.example.EnglishAppAPI.responses.ApiResponseStatus;
 import com.example.EnglishAppAPI.repositories.ReportRepository;
 import com.example.EnglishAppAPI.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;

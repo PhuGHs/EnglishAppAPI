@@ -1,8 +1,8 @@
 package com.example.EnglishAppAPI.controllers;
 
-import com.example.EnglishAppAPI.dtos.AnswerDto;
+import com.example.EnglishAppAPI.mapstruct.dtos.AnswerDto;
 import com.example.EnglishAppAPI.entities.Answer;
-import com.example.EnglishAppAPI.models.ApiResponse;
+import com.example.EnglishAppAPI.responses.ApiResponse;
 import com.example.EnglishAppAPI.services.AnswerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;

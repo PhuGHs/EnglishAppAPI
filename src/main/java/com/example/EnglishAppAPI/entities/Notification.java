@@ -33,6 +33,7 @@ public class Notification {
     private boolean isRead;
 
     @Column(name = "created_at")
+    @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
 
     @Column(name = "created_item_id")
