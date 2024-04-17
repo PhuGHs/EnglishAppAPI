@@ -27,7 +27,6 @@ public class Answer {
     @JoinColumn(name = "user_id")
     private UserEntity user;
 
-    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "answer_text", nullable = false)
     private String answerText;
 
@@ -36,5 +35,5 @@ public class Answer {
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    private LocalDateTime updatedAt = LocalDateTime.now();
 }

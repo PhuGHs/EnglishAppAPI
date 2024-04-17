@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("${api.prefix}/chat")
+@RequestMapping("${api.prefix/chat")
 public class ChatController {
     @Autowired
     private ChatService chatService;

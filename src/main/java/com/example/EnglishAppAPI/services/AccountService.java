@@ -8,6 +8,7 @@ import com.example.EnglishAppAPI.entities.Role;
 import com.example.EnglishAppAPI.entities.UserEntity;
 import com.example.EnglishAppAPI.exceptions.NotFoundException;
 import com.example.EnglishAppAPI.exceptions.UnauthorizedException;
+import com.example.EnglishAppAPI.mapstruct.mappers.MapStructMapper;
 import com.example.EnglishAppAPI.responses.ApiResponse;
 import com.example.EnglishAppAPI.responses.ApiResponseStatus;
 import com.example.EnglishAppAPI.responses.AuthResponse;
@@ -29,6 +30,7 @@ import java.util.Optional;
 @Service
 public class AccountService implements IAccountService {
     private final AccountRepository accountRepository;
+    private MapStructMapper mapper;
     private final RoleRepository roleRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;

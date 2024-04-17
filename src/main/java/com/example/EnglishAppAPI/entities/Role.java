@@ -22,4 +22,6 @@ public class Role {
     public Role(String roleName) {
         this.roleName = roleName;
     }
+    public static String ADMIN = "ADMIN";
+    public static String LEARNER = "LEARNER";
 }

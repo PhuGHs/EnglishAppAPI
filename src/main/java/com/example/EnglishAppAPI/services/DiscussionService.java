@@ -11,6 +11,7 @@ import com.example.EnglishAppAPI.repositories.DiscussionRepository;
 import com.example.EnglishAppAPI.repositories.EnglishTopicRepository;
 import com.example.EnglishAppAPI.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cglib.core.Local;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -19,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -57,8 +59,8 @@ public class DiscussionService implements IDiscussionService {
 
         Discussion discussion = Discussion.builder()
                 .title(request.getTitle())
-                .createdDate(new Date())
-                .updatedDate(new Date())
+                .createdDate(LocalDateTime.now())
+                .updatedDate(LocalDateTime.now())
                 .user(user)
                 .topic(topic)
                 .answers(new HashSet<>())

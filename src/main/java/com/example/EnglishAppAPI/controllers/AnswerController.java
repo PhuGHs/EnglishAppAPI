@@ -2,6 +2,7 @@ package com.example.EnglishAppAPI.controllers;
 
 import com.example.EnglishAppAPI.mapstruct.dtos.AnswerDto;
 import com.example.EnglishAppAPI.entities.Answer;
+import com.example.EnglishAppAPI.mapstruct.dtos.AnswerGetDto;
 import com.example.EnglishAppAPI.responses.ApiResponse;
 import com.example.EnglishAppAPI.services.AnswerService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +17,7 @@ public class AnswerController {
     @Autowired
     private AnswerService answerService;
     @GetMapping("")
-    public Page<Answer> getAllAnswers(@RequestParam Long discussionId, @RequestParam int pageNumber, @RequestParam int pageSize, @RequestParam(defaultValue = "createdDate") String sortBy) {
+    public Page<AnswerGetDto> getAllAnswers(@RequestParam Long discussionId, @RequestParam int pageNumber, @RequestParam int pageSize, @RequestParam(defaultValue = "createdDate") String sortBy) {
         return answerService.getAllAnswers(discussionId, pageNumber, pageSize, sortBy);
     }
 

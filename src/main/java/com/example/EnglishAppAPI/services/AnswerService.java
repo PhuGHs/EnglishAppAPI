@@ -5,6 +5,8 @@ import com.example.EnglishAppAPI.entities.Answer;
 import com.example.EnglishAppAPI.entities.Discussion;
 import com.example.EnglishAppAPI.entities.UserEntity;
 import com.example.EnglishAppAPI.exceptions.NotFoundException;
+import com.example.EnglishAppAPI.mapstruct.dtos.AnswerGetDto;
+import com.example.EnglishAppAPI.mapstruct.mappers.MapStructMapper;
 import com.example.EnglishAppAPI.responses.ApiResponse;
 import com.example.EnglishAppAPI.responses.ApiResponseStatus;
 import com.example.EnglishAppAPI.repositories.AnswerRepository;
@@ -19,20 +21,36 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Service
-public class AnswerService implements IAnswerService{
+public class AnswerService implements IAnswerService {
+    private final AnswerRepository answerRepository;
+    private final UserRepository userRepository;
+    private final DiscussionRepository discussionRepository;
+    private final MapStructMapper mapper;
+
     @Autowired
-    private AnswerRepository answerRepository;
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private DiscussionRepository discussionRepository;
+    public AnswerService(AnswerRepository answerRepository, UserRepository userRepository, DiscussionRepository discussionRepository, MapStructMapper mapper) {
+        this.answerRepository = answerRepository;
+        this.userRepository = userRepository;
+        this.discussionRepository = discussionRepository;
+        this.mapper = mapper;
+    }
+
     @Override
-    public Page<Answer> getAllAnswers(Long discussionId, int pageNumber, int pageSize, String sortBy) {
+    public Page<AnswerGetDto> getAllAnswers(Long discussionId, int pageNumber, int pageSize, String sortBy) {
         Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by(sortBy));
-        return answerRepository.findAll(pageable);
+        Page<Answer> answersPage = answerRepository.findAll(pageable);
+        return answersPage.map(mapper::answerToDto);
+    }
+
+    @Override
+    public ResponseEntity<ApiResponse> getAnswer(Long answerId) {
+        Answer answer = answerRepository.findById(answerId)
+                .orElseThrow(() -> new NotFoundException("the answer have been deleted or not existed"));
+        return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "get answer", mapper.answerToDto(answer)));
     }
 
     @Override
@@ -45,10 +63,9 @@ public class AnswerService implements IAnswerService{
                 .discussion(discussion)
                 .user(user)
                 .answerText(answerDto.getAnswerText())
-                .createdAt(new Date())
-                .updatedAt(new Date())
                 .build();
-        return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(ApiResponseStatus.SUCCESS, "Answered the discussion successfully", answer));
+        AnswerGetDto answerGetDto = mapper.answerToDto(answer);
+        return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(ApiResponseStatus.SUCCESS, "Answered the discussion successfully", answerGetDto));
     }
 
     @Override
@@ -62,8 +79,9 @@ public class AnswerService implements IAnswerService{
         Answer answer = answerRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("answer is not found"));
         answer.setAnswerText(answer.getAnswerText());
-        answer.setUpdatedAt(new Date());
-        return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(ApiResponseStatus.SUCCESS, "Edited the answer successfully", answer));
+        answer.setUpdatedAt(LocalDateTime.now());
+        AnswerGetDto answerGetDto = mapper.answerToDto(answer);
+        return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(ApiResponseStatus.SUCCESS, "Edited the answer successfully", answerGetDto));
     }
 
     @Override
