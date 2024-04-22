@@ -1,5 +1,7 @@
 package com.example.EnglishAppAPI.controllers;
 
+import com.example.EnglishAppAPI.mapstruct.dtos.ChangePasswordDto;
+import com.example.EnglishAppAPI.mapstruct.dtos.EmailVerificationDto;
 import com.example.EnglishAppAPI.mapstruct.dtos.LoginDto;
 import com.example.EnglishAppAPI.mapstruct.dtos.RegisterDto;
 import com.example.EnglishAppAPI.entities.UserEntity;
@@ -19,13 +21,23 @@ public class AuthController {
     @Autowired
     private AccountService accountService;
 
-    @RequestMapping(value = "register", method = RequestMethod.POST)
+    @PostMapping("/register")
     public ResponseEntity<ApiResponse> register(@Valid @RequestBody RegisterDto registerDto) {
         return accountService.register(registerDto);
     }
-    @RequestMapping(value = "login", method = RequestMethod.POST)
+    @PostMapping("/login")
     public ResponseEntity<ApiResponse> login(@Valid @RequestBody LoginDto loginDto) {
         return accountService.login(loginDto);
+    }
+
+    @PutMapping("/forgot-password/{email}")
+    public ResponseEntity<?> sendVerificationEmail(@PathVariable(name = "email") String email) {
+        return accountService.sendVerificationEmail(email);
+    }
+
+    @PutMapping("/reset-password")
+    public ResponseEntity<?> changePassword(@Valid @RequestBody EmailVerificationDto emailVerificationDto) {
+        return accountService.verifyCode(emailVerificationDto);
     }
 
     @GetMapping("/current-user")

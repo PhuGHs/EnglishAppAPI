@@ -31,7 +31,7 @@ import java.util.List;
 @EnableMethodSecurity
 public class SecurityConfiguration {
     private final JwtAuthEntryPoint jwtAuthEntryPoint;
-    @Value("{api.prefix}")
+    @Value("${api.prefix}")
     private String apiPrefix;
     @Autowired
     public SecurityConfiguration(JwtAuthEntryPoint jwtAuthEntryPoint) {
@@ -40,7 +40,6 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .addFilterBefore(getJwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(req -> req
                         .requestMatchers("/swagger/**").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
@@ -56,8 +55,9 @@ public class SecurityConfiguration {
                         //english-levels
                         .requestMatchers(HttpMethod.GET, String.format("%s/english-levels", apiPrefix)).hasRole(Role.LEARNER)
                         .requestMatchers(HttpMethod.POST, String.format("%s/english-levels", apiPrefix)).hasRole(Role.ADMIN)
-
+//                        .requestMatchers("api/v1").permitAll()
                         .anyRequest().authenticated())
+                .addFilterBefore(getJwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(eh -> eh.authenticationEntryPoint(jwtAuthEntryPoint));

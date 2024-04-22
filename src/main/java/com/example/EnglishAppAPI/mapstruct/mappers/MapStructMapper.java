@@ -17,6 +17,8 @@ import javax.annotation.processing.Generated;
 @Mapper(componentModel = "spring")
 public interface MapStructMapper {
 
+    @Mapping(target = "userId", source = "user.userId")
+    @Mapping(target = "discussionId", source = "discussion.id")
     AnswerGetDto answerToDto(Answer answer);
     Answer answerDtoToEntity(AnswerDto answerDto);
 }

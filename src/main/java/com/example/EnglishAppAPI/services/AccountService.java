@@ -1,6 +1,8 @@
 package com.example.EnglishAppAPI.services;
 
 import com.example.EnglishAppAPI.configuration.security.JwtGenerator;
+import com.example.EnglishAppAPI.exceptions.ErrorResponse;
+import com.example.EnglishAppAPI.mapstruct.dtos.EmailVerificationDto;
 import com.example.EnglishAppAPI.mapstruct.dtos.LoginDto;
 import com.example.EnglishAppAPI.mapstruct.dtos.RegisterDto;
 import com.example.EnglishAppAPI.entities.Account;
@@ -26,6 +28,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.Random;
+import java.util.UUID;
 
 @Service
 public class AccountService implements IAccountService {
@@ -36,6 +40,8 @@ public class AccountService implements IAccountService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtGenerator jwtGenerator;
+    @Autowired
+    private EmailService emailService;
 
     @Autowired
     public AccountService(AccountRepository accountRepository, RoleRepository roleRepository, UserRepository userRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtGenerator jwtGenerator) {
@@ -59,7 +65,7 @@ public class AccountService implements IAccountService {
         UserEntity user = new UserEntity(registerDto.getFullName(), registerDto.getIsMale());
         userRepository.save(user);
         Account account = new Account(registerDto.getEmail(), passwordEncoder.encode(registerDto.getPassword()));
-        Role role = roleRepository.findByRoleName("USER").orElseThrow(() -> new NotFoundException("cannot find the role"));
+        Role role = roleRepository.findByRoleName(Role.LEARNER).orElseThrow(() -> new NotFoundException("cannot find the role"));
         account.setRole(role);
         account.setUser(user);
         accountRepository.save(account);
@@ -88,5 +94,41 @@ public class AccountService implements IAccountService {
         Account account = accountRepository.findByEmail(email)
                 .orElseThrow(() -> new NotFoundException("email is not existed"));
         return ResponseEntity.status(HttpStatus.OK).body(account.getUser());
+    }
+
+    @Override
+    public ResponseEntity<?> sendVerificationEmail(String email) {
+        String verificationCode = generateVerificationCode();
+        Account account = accountRepository.findByEmail(email)
+                .orElse(null);
+        if (account == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(HttpStatus.NOT_FOUND, "cannot find the account with the email provided"));
+        }
+        account.setVerificationCode(verificationCode);
+        accountRepository.save(account);
+        emailService.sendEmail(email, "Password reset request", "You have made a request to change your password, here is the code: "+ verificationCode);
+        return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "sent email", email));
+    }
+
+    @Override
+    public ResponseEntity<?> verifyCode(EmailVerificationDto emailVerificationDto) {
+        Account account = accountRepository.findByEmail(emailVerificationDto.getEmail())
+                .orElse(null);
+        if (account == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(HttpStatus.NOT_FOUND, "cannot find the account with the email provided"));
+        }
+        if (account.getVerificationCode().equals(emailVerificationDto.getCode())) {
+            account.setVerificationCode("");
+            accountRepository.save(account);
+            emailService.sendEmail(emailVerificationDto.getEmail(), "Changed password successfully!", "Your account password had been changed");
+            return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "code matched", ""));
+        }
+        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(new ErrorResponse(HttpStatus.NOT_IMPLEMENTED, "the code are not matched, please try again"));
+    }
+
+    private String generateVerificationCode() {
+        Random random = new Random();
+        int code = random.nextInt(900000) + 100000;
+        return String.valueOf(code);
     }
 }

@@ -11,7 +11,7 @@ import java.io.Serializable;
 
 @Data
 public class RegisterDto implements Serializable {
-    @Email(message = "Provided email is invalid", regexp = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$")
+    @Email(message = "Provided email is invalid")
     @NotEmpty(message = "Email cannot be empty")
     private String email;
     @Length(min = 6, max = 12, message = "Password length must be between 6 and 12 characters")

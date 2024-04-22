@@ -5,6 +5,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
@@ -14,22 +15,22 @@ import java.util.Date;
 @Component
 public class JwtGenerator {
     @Autowired
-    private ConfigConstants constants;
+    private ConfigConstants config;
     public String generateToken(Authentication authentication) {
         String username = authentication.getName();
         Date currentDate = new Date();
-        Date expireDate = new Date(currentDate.getTime() + ConfigConstants.JWT_EXPIRATION);
+        Date expireDate = new Date(currentDate.getTime() + Long.parseLong(config.getJwtExpiration()));
 
         return Jwts.builder()
                 .setSubject(username)
                 .setIssuedAt(currentDate)
                 .setExpiration(expireDate)
-                .signWith(SignatureAlgorithm.HS512, constants.getJWT_KEY())
+                .signWith(SignatureAlgorithm.HS512, config.getJwtSecretKey())
                 .compact();
     }
     public String getUsernameFromJwt(String token) {
             Claims claims = Jwts.parser()
-                .setSigningKey(constants.getJWT_KEY())
+                .setSigningKey(config.getJwtSecretKey())
                 .parseClaimsJws(token)
                 .getBody();
         return claims.getSubject();
@@ -37,7 +38,7 @@ public class JwtGenerator {
 
     public boolean validateToken(String token) {
         try {
-            Jwts.parser().setSigningKey(constants.getJWT_KEY()).parseClaimsJws(token);
+            Jwts.parser().setSigningKey(config.getJwtSecretKey()).parseClaimsJws(token);
             return true;
         } catch (Exception ex) {
             throw new AuthenticationCredentialsNotFoundException("Jwt token is expired or incorrect");
