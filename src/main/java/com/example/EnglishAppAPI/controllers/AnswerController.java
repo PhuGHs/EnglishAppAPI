@@ -5,6 +5,7 @@ import com.example.EnglishAppAPI.entities.Answer;
 import com.example.EnglishAppAPI.mapstruct.dtos.AnswerGetDto;
 import com.example.EnglishAppAPI.responses.ApiResponse;
 import com.example.EnglishAppAPI.services.AnswerService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RestControllerAdvice
 @RequestMapping("${api.prefix}/answers")
+@SecurityRequirement(name = "bearerAuth")
 public class AnswerController {
     @Autowired
     private AnswerService answerService;

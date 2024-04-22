@@ -24,6 +24,8 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -73,6 +75,25 @@ public class AccountService implements IAccountService {
     }
 
     @Override
+    public ResponseEntity<ApiResponse> registerAdminAccount(RegisterDto registerDto) {
+        if (accountRepository.existsByEmail(registerDto.getEmail())) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse(ApiResponseStatus.FAIL, "Email is taken by other users", ""));
+        }
+
+        if (!registerDto.getPassword().equals(registerDto.getConfirmedPassword())) {
+            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(new ApiResponse(ApiResponseStatus.FAIL, "Passwords are not match!!", ""));
+        }
+        UserEntity user = new UserEntity(registerDto.getFullName(), registerDto.getIsMale());
+        userRepository.save(user);
+        Account account = new Account(registerDto.getEmail(), passwordEncoder.encode(registerDto.getPassword()));
+        Role role = roleRepository.findByRoleName(Role.ADMIN).orElseThrow(() -> new NotFoundException("cannot find the role"));
+        account.setRole(role);
+        account.setUser(user);
+        accountRepository.save(account);
+        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(ApiResponseStatus.SUCCESS, "Created admin account successfully!", account));
+    }
+
+    @Override
     public ResponseEntity<ApiResponse> login(LoginDto loginDto) {
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginDto.getEmail(), loginDto.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -90,10 +111,41 @@ public class AccountService implements IAccountService {
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new UnauthorizedException("User is not authenticated");
         }
-        String email = authentication.getName();
+        Object principal = authentication.getPrincipal();
+        String email = ((UserDetails)principal).getUsername();
+        if (email == null) {
+            System.out.println("email null");
+        } else {
+            System.out.println(email);
+        }
         Account account = accountRepository.findByEmail(email)
                 .orElseThrow(() -> new NotFoundException("email is not existed"));
         return ResponseEntity.status(HttpStatus.OK).body(account.getUser());
+    }
+
+    @Override
+    public ResponseEntity<String> resetPasswordWhenLoggedIn(LoginDto loginDto) {
+        Authentication currentAuth = SecurityContextHolder.getContext().getAuthentication();
+        UserDetails userDetails = new User(loginDto.getEmail(), loginDto.getPassword(), currentAuth.getAuthorities());
+        Authentication newAuth = new UsernamePasswordAuthenticationToken(userDetails, loginDto.getPassword(), userDetails.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(newAuth);
+
+        Account account = accountRepository.findByEmail(loginDto.getEmail())
+                .orElseThrow(() -> new NotFoundException("email is not existed"));
+        account.setPassword(loginDto.getPassword());
+        accountRepository.save(account);
+        emailService.sendEmail(loginDto.getEmail(), "Changed password successfully!", "Your account password had been changed");
+        return ResponseEntity.ok("successful password reset");
+    }
+
+    @Override
+    public ResponseEntity<String> resetPasswordWhenForget(LoginDto loginDto) {
+        Account account = accountRepository.findByEmail(loginDto.getEmail())
+                .orElseThrow(() -> new NotFoundException("email is not existed"));
+        account.setPassword(loginDto.getPassword());
+        accountRepository.save(account);
+        emailService.sendEmail(loginDto.getEmail(), "Changed password successfully!", "Your account password had been changed");
+        return ResponseEntity.ok("successful password reset");
     }
 
     @Override
@@ -120,7 +172,6 @@ public class AccountService implements IAccountService {
         if (account.getVerificationCode().equals(emailVerificationDto.getCode())) {
             account.setVerificationCode("");
             accountRepository.save(account);
-            emailService.sendEmail(emailVerificationDto.getEmail(), "Changed password successfully!", "Your account password had been changed");
             return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "code matched", ""));
         }
         return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(new ErrorResponse(HttpStatus.NOT_IMPLEMENTED, "the code are not matched, please try again"));

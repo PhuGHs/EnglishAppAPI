@@ -4,6 +4,7 @@ import com.example.EnglishAppAPI.mapstruct.dtos.EnglishTopicDto;
 import com.example.EnglishAppAPI.mapstruct.dtos.EnglishTopicQuestionDto;
 import com.example.EnglishAppAPI.responses.ApiResponse;
 import com.example.EnglishAppAPI.services.EnglishTopicService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("${api.prefix}/english-topics")
+@SecurityRequirement(name = "bearerAuth")
 public class EnglishTopicController {
     @Autowired
     private EnglishTopicService englishTopicService;

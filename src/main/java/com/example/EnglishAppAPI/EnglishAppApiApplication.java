@@ -14,7 +14,7 @@ import org.springframework.context.event.EventListener;
 
 @SpringBootApplication
 @OpenAPIDefinition(info = @Info(title = "EnglishAppAPI", version = "1.0", description = "This is an english app that helps people to learn English"))
-@SecurityScheme(name = "authorize", scheme = "bearer", type = SecuritySchemeType.HTTP, in = SecuritySchemeIn.HEADER)
+@SecurityScheme(name = "bearerAuth", scheme = "bearer", bearerFormat = "JWT", type = SecuritySchemeType.HTTP, in = SecuritySchemeIn.HEADER)
 public class EnglishAppApiApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(EnglishAppApiApplication.class, args);

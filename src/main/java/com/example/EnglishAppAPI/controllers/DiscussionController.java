@@ -4,6 +4,7 @@ import com.example.EnglishAppAPI.mapstruct.dtos.DiscussionDto;
 import com.example.EnglishAppAPI.entities.Discussion;
 import com.example.EnglishAppAPI.responses.ApiResponse;
 import com.example.EnglishAppAPI.services.DiscussionService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RestControllerAdvice
 @RequestMapping("${api.prefix}/discussions")
+@SecurityRequirement(name = "bearerAuth")
 public class DiscussionController {
     @Autowired
     private DiscussionService discussionService;

@@ -25,19 +25,35 @@ public class AuthController {
     public ResponseEntity<ApiResponse> register(@Valid @RequestBody RegisterDto registerDto) {
         return accountService.register(registerDto);
     }
+
+    @PostMapping("/register-admin")
+    public ResponseEntity<ApiResponse> registerAdminAccount(@Valid @RequestBody RegisterDto registerDto) {
+        return accountService.registerAdminAccount(registerDto);
+    }
+
     @PostMapping("/login")
     public ResponseEntity<ApiResponse> login(@Valid @RequestBody LoginDto loginDto) {
         return accountService.login(loginDto);
     }
 
-    @PutMapping("/forgot-password/{email}")
-    public ResponseEntity<?> sendVerificationEmail(@PathVariable(name = "email") String email) {
+    @PutMapping("/forgot-password")
+    public ResponseEntity<?> sendVerificationEmail(@RequestParam(name = "email") String email) {
         return accountService.sendVerificationEmail(email);
     }
 
-    @PutMapping("/reset-password")
-    public ResponseEntity<?> changePassword(@Valid @RequestBody EmailVerificationDto emailVerificationDto) {
+    @PutMapping("/verify-code")
+    public ResponseEntity<?> verifyCode(@Valid @RequestBody EmailVerificationDto emailVerificationDto) {
         return accountService.verifyCode(emailVerificationDto);
+    }
+
+    @PutMapping("/reset-password-authenticated")
+    public ResponseEntity<String> resetPasswordAuthenticated(@Valid @RequestBody LoginDto loginDto) {
+        return accountService.resetPasswordWhenLoggedIn(loginDto);
+    }
+
+    @PutMapping("/reset-password-forgot")
+    public ResponseEntity<String> resetPasswordWhenForgot(@Valid @RequestBody LoginDto loginDto) {
+        return accountService.resetPasswordWhenForget(loginDto);
     }
 
     @GetMapping("/current-user")

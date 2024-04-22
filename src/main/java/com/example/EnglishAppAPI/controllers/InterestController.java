@@ -2,6 +2,7 @@ package com.example.EnglishAppAPI.controllers;
 
 import com.example.EnglishAppAPI.entities.Interest;
 import com.example.EnglishAppAPI.services.InterestService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.constraints.NotEmpty;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +13,7 @@ import java.util.Set;
 
 @RestController
 @RequestMapping("${api.prefix}/interests")
+@SecurityRequirement(name = "bearerAuth")
 public class InterestController {
     @Autowired
     private InterestService interestService;
