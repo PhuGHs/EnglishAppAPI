@@ -1,10 +1,14 @@
 package com.example.EnglishAppAPI.services;
 
+import com.example.EnglishAppAPI.entities.Answer;
 import com.example.EnglishAppAPI.mapstruct.dtos.DiscussionDto;
 import com.example.EnglishAppAPI.entities.Discussion;
 import com.example.EnglishAppAPI.entities.EnglishTopic;
 import com.example.EnglishAppAPI.entities.UserEntity;
 import com.example.EnglishAppAPI.exceptions.NotFoundException;
+import com.example.EnglishAppAPI.mapstruct.dtos.DiscussionPostDto;
+import com.example.EnglishAppAPI.mapstruct.enums.DiscussionOrderBy;
+import com.example.EnglishAppAPI.mapstruct.mappers.DiscussionMapper;
 import com.example.EnglishAppAPI.responses.ApiResponse;
 import com.example.EnglishAppAPI.responses.ApiResponseStatus;
 import com.example.EnglishAppAPI.repositories.DiscussionRepository;
@@ -29,12 +33,15 @@ import java.util.List;
 public class DiscussionService implements IDiscussionService {
     private final DiscussionRepository discussionRepository;
     private final UserRepository userRepository;
-    private EnglishTopicRepository englishTopicRepository;
+    private final EnglishTopicRepository englishTopicRepository;
+    private final DiscussionMapper discussionMapper;
 
     @Autowired
-    public DiscussionService(DiscussionRepository discussionRepository, UserRepository userRepository) {
+    public DiscussionService(DiscussionRepository discussionRepository, UserRepository userRepository, EnglishTopicRepository englishTopicRepository, DiscussionMapper discussionMapper) {
         this.discussionRepository = discussionRepository;
         this.userRepository = userRepository;
+        this.englishTopicRepository = englishTopicRepository;
+        this.discussionMapper = discussionMapper;
     }
 
     @Override
@@ -50,7 +57,7 @@ public class DiscussionService implements IDiscussionService {
     }
 
     @Override
-    public ResponseEntity<ApiResponse> addNewDiscussion(DiscussionDto request) {
+    public ResponseEntity<ApiResponse> addNewDiscussion(DiscussionPostDto request) {
         UserEntity user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new NotFoundException("Invalid user ID"));
 
@@ -66,22 +73,31 @@ public class DiscussionService implements IDiscussionService {
                 .answers(new HashSet<>())
                 .build();
         discussionRepository.save(discussion);
-        return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(ApiResponseStatus.SUCCESS, "Created a new discussion", discussion));
+        return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(ApiResponseStatus.SUCCESS, "Created a new discussion", discussionMapper.toDto(discussion)));
     }
 
     @Override
-    public ResponseEntity<ApiResponse> updateDiscussion(Long discussionId, DiscussionDto discussion) {
+    public ResponseEntity<ApiResponse> updateDiscussion(Long discussionId, DiscussionPostDto discussion) {
         Discussion dis = discussionRepository.findById(discussionId)
                 .orElseThrow(() -> new NotFoundException("Can't find the discussion"));
         EnglishTopic topic = englishTopicRepository.findById(discussion.getEnglishTopicId())
                 .orElseThrow(() -> new NotFoundException("Can't find the topic with the provided id"));
         dis.setTopic(topic);
-        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(ApiResponseStatus.SUCCESS, "discussion was updated", dis));
+        dis.setTitle(discussion.getTitle());
+        discussionRepository.save(dis);
+        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(ApiResponseStatus.SUCCESS, "discussion was updated", discussionMapper.toDto(dis)));
     }
 
     @Override
     public ResponseEntity<ApiResponse> deleteDiscussion(Long discussionId) {
         discussionRepository.deleteById(discussionId);
         return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(ApiResponseStatus.SUCCESS, "discussion was deleted", ""));
+    }
+
+    @Override
+    public Page<DiscussionDto> getUserDiscussions(int pageNumber, int pageSize, DiscussionOrderBy sortBy) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by(sortBy.toString()));
+        Page<Discussion> discussionsPage = discussionRepository.findAll(pageable);
+        return discussionsPage.map(discussionMapper::toDto);
     }
 }

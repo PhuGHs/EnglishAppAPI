@@ -23,6 +23,9 @@ public class Discussion {
     @Column(name = "title", nullable = false)
     private String title;
 
+    @Column(name = "number_of_answers")
+    private int numberOfAnswers = 0;
+
     @Column(name = "created_date")
     @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime createdDate = LocalDateTime.now();

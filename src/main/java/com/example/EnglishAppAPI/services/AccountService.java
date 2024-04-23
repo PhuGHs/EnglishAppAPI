@@ -113,11 +113,6 @@ public class AccountService implements IAccountService {
         }
         Object principal = authentication.getPrincipal();
         String email = ((UserDetails)principal).getUsername();
-        if (email == null) {
-            System.out.println("email null");
-        } else {
-            System.out.println(email);
-        }
         Account account = accountRepository.findByEmail(email)
                 .orElseThrow(() -> new NotFoundException("email is not existed"));
         return ResponseEntity.status(HttpStatus.OK).body(account.getUser());

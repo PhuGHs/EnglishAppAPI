@@ -2,23 +2,22 @@ package com.example.EnglishAppAPI.mapstruct.dtos;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class EnglishTopicDto {
-    @JsonProperty("topic_id")
-    @NotNull(message = "the topic property is required")
-    private Long topicId;
+public class EnglishTopicPostDto {
     @JsonProperty("header")
-    @NotEmpty(message = "the header must not be empty")
+    @NotEmpty(message = "The header property is required")
     private String header;
     @JsonProperty("content")
+    @NotEmpty(message = "The content property is required")
     private String content;
     @JsonProperty("english_level_id")
-    @NotNull(message = "the english level is required")
     private Long englishLevelId;
 }

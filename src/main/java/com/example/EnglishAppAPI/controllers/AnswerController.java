@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RestControllerAdvice
 @RequestMapping("${api.prefix}/answers")
-@SecurityRequirement(name = "bearerAuth")
+//@SecurityRequirement(name = "bearerAuth")
 public class AnswerController {
     @Autowired
     private AnswerService answerService;

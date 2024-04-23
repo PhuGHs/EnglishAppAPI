@@ -9,4 +9,5 @@ import java.util.List;
 
 @Repository
 public interface EnglishTopicQuestionRepository extends JpaRepository<EnglishTopicQuestion, Long> {
+    List<EnglishTopicQuestion> findByTopic(EnglishTopic englishTopic);
 }

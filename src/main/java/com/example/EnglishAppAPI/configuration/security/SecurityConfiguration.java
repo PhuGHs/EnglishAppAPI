@@ -28,7 +28,7 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity
+@EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfiguration {
     private final JwtAuthEntryPoint jwtAuthEntryPoint;
     @Autowired
@@ -42,28 +42,32 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .addFilterBefore(getJwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
+//                .addFilterBefore(getJwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
+                .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+//                .exceptionHandling(eh -> eh.accessDeniedHandler(customAccessDeniedHandler).authenticationEntryPoint(jwtAuthEntryPoint))
                 .authorizeHttpRequests(req -> req
                         .requestMatchers("/swagger/**").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers(String.format("%s/auth/**", apiPrefix)).permitAll()
+                        .requestMatchers(String.format("%s/english-topics/**", apiPrefix)).permitAll()
 
-                        .requestMatchers(String.format("%s/answers/**", apiPrefix)).hasRole(Role.LEARNER)
-                        .requestMatchers(String.format("%s/chat/**", apiPrefix)).hasRole(Role.LEARNER)
-                        .requestMatchers(String.format("%s/discussions/**", apiPrefix)).hasRole(Role.LEARNER)
-                        .requestMatchers(String.format("%s/followers/**", apiPrefix)).hasRole(Role.LEARNER)
-
-                        .requestMatchers(String.format("%s/short-stories/**", apiPrefix)).hasRole(Role.ADMIN)
-
-                        //english-levels
-                        .requestMatchers(HttpMethod.GET, String.format("%s/english-levels", apiPrefix)).hasRole(Role.LEARNER)
-                        .requestMatchers(HttpMethod.POST, String.format("%s/english-levels", apiPrefix)).hasRole(Role.ADMIN)
-//                        .requestMatchers("api/v1").permitAll()
-                        .anyRequest().authenticated())
-                .csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .exceptionHandling(eh -> eh.authenticationEntryPoint(jwtAuthEntryPoint)
-                        .accessDeniedHandler(customAccessDeniedHandler));
+//                        .requestMatchers(String.format("%s/answers/**", apiPrefix)).hasRole(Role.LEARNER)
+//                        .requestMatchers(String.format("%s/chat/**", apiPrefix)).hasRole(Role.LEARNER)
+//                        .requestMatchers(String.format("%s/discussions/**", apiPrefix)).hasRole(Role.LEARNER)
+//                        .requestMatchers(String.format("%s/followers/**", apiPrefix)).hasRole(Role.LEARNER)
+//
+//                        .requestMatchers(String.format("%s/short-stories/**", apiPrefix)).hasRole(Role.ADMIN)
+//
+//                        //english-levels
+//                        .requestMatchers(HttpMethod.GET, String.format("%s/english-levels", apiPrefix)).hasRole(Role.LEARNER)
+//                        .requestMatchers(HttpMethod.POST, String.format("%s/english-levels", apiPrefix)).hasRole(Role.ADMIN)
+//
+//                        //english-topic
+//                        .requestMatchers(HttpMethod.GET, String.format("%s/english-topics/**", apiPrefix)).hasAnyRole(Role.LEARNER, Role.ADMIN)
+//                        .requestMatchers(HttpMethod.POST, String.format("%s/english-topics/**", apiPrefix)).hasRole(Role.ADMIN)
+//                        .requestMatchers("api/v1/**").permitAll()
+                        .anyRequest().authenticated());
         http.cors(new Customizer<CorsConfigurer<HttpSecurity>>() {
             @Override
             public void customize(CorsConfigurer<HttpSecurity> httpSecurityCorsConfigurer) {

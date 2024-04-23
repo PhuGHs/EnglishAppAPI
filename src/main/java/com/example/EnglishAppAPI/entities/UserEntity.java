@@ -25,7 +25,7 @@ public class UserEntity {
     private String fullName;
 
     @Column(name = "gender")
-    private Boolean gender = false;
+    private boolean gender = false;
 
     @Column(name = "quote")
     private String quote = "";

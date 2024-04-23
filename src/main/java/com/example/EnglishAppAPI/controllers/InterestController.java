@@ -13,7 +13,7 @@ import java.util.Set;
 
 @RestController
 @RequestMapping("${api.prefix}/interests")
-@SecurityRequirement(name = "bearerAuth")
+//@SecurityRequirement(name = "bearerAuth")
 public class InterestController {
     @Autowired
     private InterestService interestService;
