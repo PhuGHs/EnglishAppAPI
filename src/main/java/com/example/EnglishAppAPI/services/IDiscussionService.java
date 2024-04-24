@@ -16,6 +16,6 @@ public interface IDiscussionService {
     ResponseEntity<ApiResponse> addNewDiscussion(DiscussionPostDto discussion);
     ResponseEntity<ApiResponse> updateDiscussion(Long discussionId, DiscussionPostDto discussion);
     ResponseEntity<ApiResponse> deleteDiscussion(Long discussionId);
-    Page<DiscussionDto> getUserDiscussions(int pageNumber, int pageSize, DiscussionOrderBy sortBy);
-
+    Page<DiscussionDto> getUserDiscussions(int pageNumber, int pageSize, DiscussionOrderBy sortBy, Long userId);
+    Page<DiscussionDto> getDiscussionsByTopic(int pageNumber, int pageSize, DiscussionOrderBy sortBy, Long topicId);
 }

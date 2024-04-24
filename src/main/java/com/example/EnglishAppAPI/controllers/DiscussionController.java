@@ -36,14 +36,28 @@ public class DiscussionController {
         return discussionService.getAllDiscussions(pageNumber, pageSize, sortBy);
     }
 
-    @GetMapping("/user")
-    public Page<DiscussionDto> getUserDiscussions(@RequestParam(defaultValue = "0") int pageNumber, @RequestParam(defaultValue = "10") int pageSize, @RequestParam DiscussionOrderBy sortBy) {
-        return discussionService.getUserDiscussions(pageNumber, pageSize, sortBy);
+    @GetMapping("/user/{userId}")
+    public Page<DiscussionDto> getUserDiscussions(
+            @RequestParam(defaultValue = "0") int pageNumber,
+            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam DiscussionOrderBy sortBy,
+            @PathVariable @NotNull(message = "this user id is required") Long userId) {
+        return discussionService.getUserDiscussions(pageNumber, pageSize, sortBy, userId);
     }
 
     @GetMapping("/popular-discussions")
     public ResponseEntity<ApiResponse> getTopDiscussions() {
         return discussionService.getTopDiscussions();
+    }
+
+    @GetMapping("/{topicId}")
+    public Page<DiscussionDto> getDiscussionsByTopic(
+            @RequestParam(defaultValue = "0") int pageNumber,
+            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam DiscussionOrderBy sortBy,
+            @PathVariable Long topicId
+    ) {
+        return discussionService.getDiscussionsByTopic(pageNumber, pageSize, sortBy, topicId);
     }
 
     @DeleteMapping("{discussionId}/delete")

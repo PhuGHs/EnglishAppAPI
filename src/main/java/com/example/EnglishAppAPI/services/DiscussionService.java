@@ -47,7 +47,7 @@ public class DiscussionService implements IDiscussionService {
     @Override
     public ResponseEntity<ApiResponse> getTopDiscussions() {
         List<Discussion> discussions = discussionRepository.findTop5ByOrderByCreatedDateDesc();
-        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(ApiResponseStatus.SUCCESS, "Get top 5 sucessfully", discussions));
+        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(ApiResponseStatus.SUCCESS, "Get top 5 sucessfully", discussions.stream().map(discussionMapper::toDto)));
     }
 
     @Override
@@ -78,8 +78,13 @@ public class DiscussionService implements IDiscussionService {
 
     @Override
     public ResponseEntity<ApiResponse> updateDiscussion(Long discussionId, DiscussionPostDto discussion) {
+        UserEntity user = userRepository.findById(discussion.getUserId())
+                .orElseThrow(() -> new NotFoundException("Can't find the user"));
         Discussion dis = discussionRepository.findById(discussionId)
                 .orElseThrow(() -> new NotFoundException("Can't find the discussion"));
+        if (!user.getUserId().equals(dis.getUser().getUserId())) {
+            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(new ApiResponse(ApiResponseStatus.FAIL, "u dont own the discussion", ""));
+        }
         EnglishTopic topic = englishTopicRepository.findById(discussion.getEnglishTopicId())
                 .orElseThrow(() -> new NotFoundException("Can't find the topic with the provided id"));
         dis.setTopic(topic);
@@ -95,9 +100,20 @@ public class DiscussionService implements IDiscussionService {
     }
 
     @Override
-    public Page<DiscussionDto> getUserDiscussions(int pageNumber, int pageSize, DiscussionOrderBy sortBy) {
-        Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by(sortBy.toString()));
-        Page<Discussion> discussionsPage = discussionRepository.findAll(pageable);
+    public Page<DiscussionDto> getUserDiscussions(int pageNumber, int pageSize, DiscussionOrderBy sortBy, Long userId) {
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Can't find the user"));
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, sortBy == DiscussionOrderBy.id ? Sort.by(sortBy.toString()).ascending() : Sort.by(sortBy.toString()).descending());
+        Page<Discussion> discussionsPage = discussionRepository.findByUser(user, pageable);
         return discussionsPage.map(discussionMapper::toDto);
+    }
+
+    @Override
+    public Page<DiscussionDto> getDiscussionsByTopic(int pageNumber, int pageSize, DiscussionOrderBy sortBy, Long topicId) {
+        EnglishTopic topic = englishTopicRepository.findById(topicId)
+                .orElseThrow(() -> new NotFoundException("Can't find the topic with the provided id"));
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, sortBy == DiscussionOrderBy.id ? Sort.by(sortBy.toString()).ascending() : Sort.by(sortBy.toString()).descending());
+        Page<Discussion> discussionPage = discussionRepository.findByTopic(topic, pageable);
+        return discussionPage.map(discussionMapper::toDto);
     }
 }
