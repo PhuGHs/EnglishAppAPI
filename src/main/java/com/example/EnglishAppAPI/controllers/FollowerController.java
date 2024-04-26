@@ -1,8 +1,7 @@
 package com.example.EnglishAppAPI.controllers;
 
 import com.example.EnglishAppAPI.responses.ApiResponse;
-import com.example.EnglishAppAPI.services.UserService;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import com.example.EnglishAppAPI.services.impls.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

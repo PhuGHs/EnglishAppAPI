@@ -3,6 +3,8 @@ package com.example.EnglishAppAPI.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "short_stories")
 @Getter
@@ -23,4 +25,7 @@ public class ShortStory {
     private int numberOfLikes = 0;
     @Column(name = "image")
     private String image;
+    @Column(name = "created_date")
+    @Temporal(TemporalType.TIMESTAMP)
+    private LocalDateTime createdDate = LocalDateTime.now();
 }

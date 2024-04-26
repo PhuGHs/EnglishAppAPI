@@ -6,23 +6,18 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @AllArgsConstructor
 @NoArgsConstructor
-@Setter
 @Getter
-public class AnswerDto {
-    @JsonProperty("answer_id")
-    private Long answerId;
-    @JsonProperty("created_date")
-    private LocalDateTime createdDate;
-    @JsonProperty("updated_date")
-    private LocalDateTime updatedDate;
+@Setter
+public class AnswerPostDto {
     @JsonProperty("discussion_id")
     private Long discussionId;
-    @JsonProperty("user")
-    private UserNecessaryDto user;
+    @JsonProperty("user_id")
+    private Long userId;
     @JsonProperty("answer_text")
     private String answerText;
 }

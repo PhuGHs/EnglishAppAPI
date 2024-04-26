@@ -2,8 +2,7 @@ package com.example.EnglishAppAPI.controllers;
 
 import com.example.EnglishAppAPI.entities.Message;
 import com.example.EnglishAppAPI.responses.ApiResponse;
-import com.example.EnglishAppAPI.services.ChatService;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import com.example.EnglishAppAPI.services.impls.ChatService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

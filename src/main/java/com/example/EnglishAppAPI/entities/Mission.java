@@ -32,6 +32,9 @@ public class Mission {
     @ManyToMany(mappedBy = "missions")
     private Set<UserEntity> users = new HashSet<>();
 
+    @Column(name = "max_completion_count")
+    private int maxCompletionCount;
+
     public Mission(String missionName, int pointsAwarded, Date missionDate) {
         this.missionName = missionName;
         this.pointsAwarded = pointsAwarded;

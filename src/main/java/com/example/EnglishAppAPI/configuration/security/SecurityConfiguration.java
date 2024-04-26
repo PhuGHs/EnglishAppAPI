@@ -53,13 +53,15 @@ public class SecurityConfiguration {
                         .requestMatchers(String.format("%s/english-topics/**", apiPrefix)).permitAll()
                         .requestMatchers(String.format("%s/discussions/**", apiPrefix)).permitAll()
                         .requestMatchers(String.format("%s/interests/**", apiPrefix)).permitAll()
+                        .requestMatchers(String.format("%s/short-stories/**", apiPrefix)).permitAll()
+                        .requestMatchers(String.format("%s/reports/**", apiPrefix)).permitAll()
+                        .requestMatchers(String.format("%s/answers/**", apiPrefix)).permitAll()
 
 //                        .requestMatchers(String.format("%s/answers/**", apiPrefix)).hasRole(Role.LEARNER)
 //                        .requestMatchers(String.format("%s/chat/**", apiPrefix)).hasRole(Role.LEARNER)
 //                        .requestMatchers(String.format("%s/discussions/**", apiPrefix)).hasRole(Role.LEARNER)
 //                        .requestMatchers(String.format("%s/followers/**", apiPrefix)).hasRole(Role.LEARNER)
 //
-//                        .requestMatchers(String.format("%s/short-stories/**", apiPrefix)).hasRole(Role.ADMIN)
 //
 //                        //english-levels
 //                        .requestMatchers(HttpMethod.GET, String.format("%s/english-levels", apiPrefix)).hasRole(Role.LEARNER)

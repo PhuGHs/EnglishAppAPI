@@ -1,18 +1,13 @@
 package com.example.EnglishAppAPI.controllers;
 
-import com.example.EnglishAppAPI.mapstruct.dtos.EnglishTopicDto;
 import com.example.EnglishAppAPI.mapstruct.dtos.EnglishTopicPostDto;
-import com.example.EnglishAppAPI.mapstruct.dtos.EnglishTopicQuestionDto;
 import com.example.EnglishAppAPI.mapstruct.dtos.EnglishTopicQuestionPostDto;
 import com.example.EnglishAppAPI.responses.ApiResponse;
-import com.example.EnglishAppAPI.services.EnglishTopicService;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import com.example.EnglishAppAPI.services.impls.EnglishTopicService;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 

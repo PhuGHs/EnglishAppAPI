@@ -1,12 +1,11 @@
 package com.example.EnglishAppAPI.controllers;
 
-import com.example.EnglishAppAPI.mapstruct.dtos.ChangePasswordDto;
 import com.example.EnglishAppAPI.mapstruct.dtos.EmailVerificationDto;
 import com.example.EnglishAppAPI.mapstruct.dtos.LoginDto;
 import com.example.EnglishAppAPI.mapstruct.dtos.RegisterDto;
 import com.example.EnglishAppAPI.entities.UserEntity;
 import com.example.EnglishAppAPI.responses.ApiResponse;
-import com.example.EnglishAppAPI.services.AccountService;
+import com.example.EnglishAppAPI.services.impls.AccountService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

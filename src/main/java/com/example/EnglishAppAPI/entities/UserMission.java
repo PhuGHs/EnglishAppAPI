@@ -27,4 +27,7 @@ public class UserMission {
 
     @Column(name = "is_completed")
     private boolean isCompleted;
+
+    @Column(name = "completion_count")
+    private int completionCount;
 }
