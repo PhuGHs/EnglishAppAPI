@@ -17,10 +17,14 @@ import java.util.HashSet;
 public class Database {
     private static final Logger logger = LoggerFactory.getLogger(Database.class);
     private final RoleRepository roleRepository;
+    private final UserMissionRepository userMissionRepository;
+
     @Autowired
-    public Database(RoleRepository roleRepository) {
+    public Database(RoleRepository roleRepository, UserMissionRepository userMissionRepository) {
         this.roleRepository = roleRepository;
+        this.userMissionRepository = userMissionRepository;
     }
+
     @Bean
     CommandLineRunner initDatabase() {
         return new CommandLineRunner() {
@@ -34,6 +38,7 @@ public class Database {
                     Role adminRole = new Role("ADMIN");
                     roleRepository.save(adminRole);
                 }
+
             }
         };
     }

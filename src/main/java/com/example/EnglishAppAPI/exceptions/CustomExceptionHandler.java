@@ -28,4 +28,12 @@ public class CustomExceptionHandler {
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, errorMessage);
         return ResponseEntity.badRequest().body(errorResponse);
     }
+
+    @ExceptionHandler(NullVariableException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<ErrorResponse> handleNull(MethodArgumentNotValidException exception) {
+        String errorMessage = exception.getBindingResult().getFieldError().getDefaultMessage();
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, errorMessage);
+        return ResponseEntity.badRequest().body(errorResponse);
+    }
 }

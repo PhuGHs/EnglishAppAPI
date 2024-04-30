@@ -26,18 +26,15 @@ public class Mission {
     @Column(name = "points_awarded")
     private int pointsAwarded;
 
-    @Column(name = "mission_date")
-    private Date missionDate;
-
-    @ManyToMany(mappedBy = "missions")
+    @ManyToMany(mappedBy = "missions", fetch = FetchType.LAZY)
     private Set<UserEntity> users = new HashSet<>();
 
     @Column(name = "max_completion_count")
     private int maxCompletionCount;
 
-    public Mission(String missionName, int pointsAwarded, Date missionDate) {
+    public Mission(String missionName, int pointsAwarded, int maxCompletionCount) {
         this.missionName = missionName;
         this.pointsAwarded = pointsAwarded;
-        this.missionDate = missionDate;
+        this.maxCompletionCount = maxCompletionCount;
     }
 }

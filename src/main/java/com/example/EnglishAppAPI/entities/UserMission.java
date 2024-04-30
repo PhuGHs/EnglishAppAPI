@@ -17,17 +17,17 @@ public class UserMission {
     @Column(name = "user_mission_id")
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private UserEntity user;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "mission_id")
     private Mission mission;
 
     @Column(name = "is_completed")
-    private boolean isCompleted;
+    private boolean isCompleted = false;
 
     @Column(name = "completion_count")
-    private int completionCount;
+    private int completionCount = 0;
 }
