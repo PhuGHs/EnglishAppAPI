@@ -1,5 +1,6 @@
 package com.example.EnglishAppAPI.entities;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.userdetails.User;
@@ -43,5 +44,6 @@ public class Message {
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(name = "image")
+    @Nullable
     private String image;
 }

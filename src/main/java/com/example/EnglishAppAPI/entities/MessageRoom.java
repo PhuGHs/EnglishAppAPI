@@ -1,5 +1,7 @@
 package com.example.EnglishAppAPI.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,6 +24,7 @@ public class MessageRoom {
     private String roomName;
 
     @ManyToMany
+    @JsonIgnore
     @JoinTable(name = "user_message_rooms",
             joinColumns = @JoinColumn(name = "message_room_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
@@ -29,5 +32,16 @@ public class MessageRoom {
     private Set<UserEntity> users;
 
     @OneToMany(mappedBy = "messageRoom", cascade = CascadeType.ALL, orphanRemoval = true)
-    Set<Message> messages;
+    @JsonIgnore
+    private Set<Message> messages;
+
+    @ManyToOne
+    @JoinColumn(name = "last_sent_message_id")
+    @Nullable
+    private Message lastSentMessage;
+
+    @ManyToOne
+    @JoinColumn(name = "last_sent_user_id")
+    @Nullable
+    private UserEntity lastSentUser;
 }
