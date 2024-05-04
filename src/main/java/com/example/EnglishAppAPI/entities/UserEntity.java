@@ -88,10 +88,14 @@ public class UserEntity {
     @JoinTable(name = "user_mission", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "mission_id"))
     private Set<Mission> missions = new HashSet<>();
 
+//    @JsonIgnore
+//    @ManyToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+//    @JoinTable(name = "participants", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "room_id"))
+//    private Set<LearningRoom> learningRooms = new HashSet<>();
+
     @JsonIgnore
-    @ManyToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
-    @JoinTable(name = "participants", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "room_id"))
-    private Set<LearningRoom> learningRooms = new HashSet<>();
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private Set<Participant> participants = new HashSet<>();
 
     @JsonIgnore
     @ManyToMany(mappedBy = "users")

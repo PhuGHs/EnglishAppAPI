@@ -20,9 +20,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.io.IOException;
+import java.util.*;
 
 @Service
 public class ChatService implements IChatService {
@@ -41,6 +40,8 @@ public class ChatService implements IChatService {
     private final MessageMapper messageMapper;
     private final UserMapper userMapper;
     private final MessageRepository messageRepository;
+    @Autowired
+    private CloudinaryService cloudinaryService;
     @Override
     public ResponseEntity<?> createConversation(ConversationPostDto conversationPostDto) {
         UserEntity sender = userRepository.findById(conversationPostDto.getSenderId())
@@ -80,9 +81,23 @@ public class ChatService implements IChatService {
     }
 
     @Override
-    public ResponseEntity<?> sendMessage(MessagePostDto messagePostDto) {
-        Message message = messageMapper.toEntity(messagePostDto);
-        messageRepository.save(message);
+    public ResponseEntity<?> sendMessage(MessagePostDto messagePostDto) throws IOException {
+        Message message = messageMapper.toEntity(new MessagePostDto(messagePostDto.getMessageRoomId(), messagePostDto.getSenderId(), messagePostDto.getReceiverId(), messagePostDto.getMessage(), messagePostDto.isRead(), messagePostDto.getCreatedAt(), ""));
+        MessageRoom messageRoom = messageRoomRepository.findById(messagePostDto.getMessageRoomId())
+                        .orElseThrow(() -> new NotFoundException("message room not found"));
+        message = messageRepository.save(message);
+        if (!Objects.equals(messagePostDto.getImage(), "")) {
+            Map<String, Object> result = cloudinaryService.uploadFile(messagePostDto.getImage(), "MessageRoom-"+ messagePostDto.getMessageRoomId().toString()+"-"+message.getMessageId().toString(), true, true);
+            if (!result.containsKey("public_id")) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse(ApiResponseStatus.FAIL, "Failed to upload image" + result.get("error").toString(), ""));
+            }
+            String fileUrl = String.format("https://res.cloudinary.com/daszajz9a/image/upload/v%s/%s", result.get("version"), result.get("public_id"));
+            message.setImage(fileUrl);
+        }
+        message = messageRepository.save(message);
+        messageRoom.setLastSentMessage(message);
+        messageRoom.setLastSentUser(message.getSender());
+        messageRoomRepository.save(messageRoom);
         return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "send message", messageMapper.toDto(message)));
     }
 

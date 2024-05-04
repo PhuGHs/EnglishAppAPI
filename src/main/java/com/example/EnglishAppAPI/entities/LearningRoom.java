@@ -30,14 +30,15 @@ public class LearningRoom {
     @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    @Column(name = "scheduled_to")
-    private Date scheduledTo;
+    @Column(name = "scheduled_to", nullable = true)
+    @Temporal(TemporalType.TIMESTAMP)
+    private LocalDateTime scheduledTo;
 
     @Column(name = "max_participants", nullable = false)
     private int maxParticipants;
 
-    @ManyToMany(mappedBy = "learningRooms")
-    private Set<UserEntity> users = new HashSet<>();
+    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<Participant> participants = new HashSet<>();
 
     @ManyToOne
     @JoinColumn(name = "topic_id")

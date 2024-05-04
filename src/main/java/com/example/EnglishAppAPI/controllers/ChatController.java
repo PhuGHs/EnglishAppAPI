@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+
 @RestController
 @RequestMapping("${api.prefix}/chat")
 @RestControllerAdvice
@@ -22,7 +24,7 @@ public class ChatController {
     private ChatService chatService;
 
     @PostMapping("/send-message")
-    public ResponseEntity<?> sendMessage(@Valid @RequestBody MessagePostDto messagePostDto) {
+    public ResponseEntity<?> sendMessage(@Valid @RequestBody MessagePostDto messagePostDto) throws IOException {
         return chatService.sendMessage(messagePostDto);
     }
 
@@ -37,16 +39,16 @@ public class ChatController {
     }
 
     @GetMapping("/rooms/{roomId}/messages")
-    public ResponseEntity<?> getAllMessages(@NotNull(message = "the messageRoomId is required") @Valid @PathVariable Long messageRoomId) {
-        return chatService.getAllMessages(messageRoomId);
+    public ResponseEntity<?> getAllMessages(@NotNull(message = "the messageRoomId is required") @Valid @PathVariable Long roomId) {
+        return chatService.getAllMessages(roomId);
     }
 
     @GetMapping("/rooms/{roomId}/participants")
-    public ResponseEntity<?> getParticipants(@NotNull(message = "the messageRoomId is required") @Valid @PathVariable Long messageRoomId) {
-        return chatService.getParticipants(messageRoomId);
+    public ResponseEntity<?> getParticipants(@NotNull(message = "the messageRoomId is required") @Valid @PathVariable Long roomId) {
+        return chatService.getParticipants(roomId);
     }
 
-    @PutMapping("/rooms/messages/mark-as-read")
+    @PutMapping("/rooms/messages/{messageId}mark-as-read")
     public ResponseEntity<?> markAsRead(@NotNull(message = "the messageId is required") @Valid @PathVariable Long messageId) {
         return chatService.markAsRead(messageId);
     }

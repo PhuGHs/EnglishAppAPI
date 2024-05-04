@@ -3,6 +3,7 @@ package com.example.EnglishAppAPI.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Entity
@@ -19,7 +20,7 @@ public class Participant {
     private Long id;
 
     @Column(name = "join_time")
-    private Date joinTime;
+    private LocalDateTime joinTime;
 
     @Column(name = "is_speaker")
     private boolean isSpeaker;
