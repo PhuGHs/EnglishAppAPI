@@ -1,7 +1,6 @@
 package com.example.EnglishAppAPI.mapstruct.dtos;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -16,12 +15,14 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Setter
 @Getter
-public class LearningRoomPostInstantDto {
+public class LearningRoomPostLaterDto {
     @JsonProperty("room_name")
     @NotEmpty(message = "room name is required")
     private String roomName;
     @JsonProperty("created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
+    @JsonProperty("scheduled_to")
+    private LocalDateTime scheduledTo;
     @JsonProperty("max_participants")
     @NotNull(message = "max participants is required")
     private int maxParticipants;

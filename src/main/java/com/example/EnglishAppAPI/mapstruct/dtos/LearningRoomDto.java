@@ -23,6 +23,10 @@ public class LearningRoomDto {
     private LocalDateTime scheduledTo;
     @JsonProperty("max_participants")
     private int maxParticipants;
+    @JsonProperty("duration")
+    private int duration;
+    @JsonProperty("is_live")
+    private boolean isLive;
     @JsonProperty("topic")
     private EnglishTopicDto topic;
     @JsonProperty("participants")

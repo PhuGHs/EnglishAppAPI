@@ -34,8 +34,14 @@ public class LearningRoom {
     @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime scheduledTo;
 
+    @Column(name = "duration")
+    private int duration;
+
     @Column(name = "max_participants", nullable = false)
     private int maxParticipants;
+
+    @Column(name = "is_live", nullable = false)
+    private boolean isLive = false;
 
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<Participant> participants = new HashSet<>();
