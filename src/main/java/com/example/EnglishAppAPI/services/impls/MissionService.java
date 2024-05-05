@@ -17,6 +17,7 @@ import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -78,6 +79,16 @@ public class MissionService implements IMissionService {
         }
         userMissionRepository.saveAll(userMissions);
         return ResponseEntity.ok("refreshed missions");
+    }
+
+    @Scheduled(cron = "0 0 * * *") //execute the task every day at 0 AM
+    public void refresh() {
+        List<UserMission> userMissions = userMissionRepository.findAll();
+        for (UserMission mission : userMissions) {
+            mission.setCompletionCount(0);
+            mission.setCompleted(false);
+        }
+        userMissionRepository.saveAll(userMissions);
     }
 
     @Override

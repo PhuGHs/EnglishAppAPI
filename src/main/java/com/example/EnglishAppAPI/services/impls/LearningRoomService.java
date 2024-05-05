@@ -20,9 +20,14 @@ import jakarta.annotation.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -35,15 +40,17 @@ public class LearningRoomService implements ILearningRoomService {
     private final EnglishTopicRepository englishTopicRepository;
     private final LearningRoomMapper learningRoomMapper;
     private final ParticipantMapper participantMapper;
+    private final TaskScheduler taskScheduler;
 
     @Autowired
-    public LearningRoomService(ParticipantRepository participantRepository, LearningRoomRepository learningRoomRepository, UserRepository userRepository, EnglishTopicRepository englishTopicRepository, LearningRoomMapper learningRoomMapper, ParticipantMapper participantMapper) {
+    public LearningRoomService(ParticipantRepository participantRepository, LearningRoomRepository learningRoomRepository, UserRepository userRepository, EnglishTopicRepository englishTopicRepository, LearningRoomMapper learningRoomMapper, ParticipantMapper participantMapper, TaskScheduler taskScheduler) {
         this.participantRepository = participantRepository;
         this.learningRoomRepository = learningRoomRepository;
         this.userRepository = userRepository;
         this.englishTopicRepository = englishTopicRepository;
         this.learningRoomMapper = learningRoomMapper;
         this.participantMapper = participantMapper;
+        this.taskScheduler = taskScheduler;
     }
 
     @Override
@@ -52,12 +59,13 @@ public class LearningRoomService implements ILearningRoomService {
                 .orElseThrow(() -> new NotFoundException("User not found"));
         EnglishTopic topic = englishTopicRepository.findById(learningRoomPostDto.getEnglishTopicId())
                 .orElseThrow(() -> new NotFoundException("Topic not found"));
-
         LearningRoom learningRoom = LearningRoom.builder()
                 .createdAt(LocalDateTime.now())
                 .scheduledTo(null)
                 .roomName(learningRoomPostDto.getRoomName())
                 .maxParticipants(learningRoomPostDto.getMaxParticipants())
+                .duration(learningRoomPostDto.getDuration())
+                .isLive(true)
                 .topic(topic)
                 .build();
 
@@ -87,6 +95,8 @@ public class LearningRoomService implements ILearningRoomService {
                 .createdAt(LocalDateTime.now())
                 .scheduledTo(learningRoomPostLaterDto.getScheduledTo())
                 .roomName(learningRoomPostLaterDto.getRoomName())
+                .duration(learningRoomPostLaterDto.getDuration())
+                .isLive(false)
                 .maxParticipants(learningRoomPostLaterDto.getMaxParticipants())
                 .topic(topic)
                 .build();
@@ -101,9 +111,16 @@ public class LearningRoomService implements ILearningRoomService {
         Set<Participant> ps = new HashSet<>();
         ps.add(ownerParticipant);
         learningRoom.setParticipants(ps);
+        LocalDateTime scheduledTo = learningRoomPostLaterDto.getScheduledTo();
+        Instant scheduledInstant = scheduledTo.atZone(ZoneId.systemDefault()).toInstant();
+        taskScheduler.schedule(this::sendMessageWhenItComes, scheduledInstant);
         learningRoom = learningRoomRepository.save(learningRoom);
 
         return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "created learning room later", learningRoomMapper.toDto(learningRoom)));
+    }
+
+    private void sendMessageWhenItComes(){
+        //send to client who created the room
     }
 
     @Override
