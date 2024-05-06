@@ -6,4 +6,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface EnglishTestRepository extends JpaRepository<EnglishTest, Long> {
+    @Override
+    boolean existsById(Long aLong);
 }

@@ -27,6 +27,6 @@ public class EnglishTest {
     @Column(name = "description")
     private String description;
 
-    @OneToMany
+    @OneToMany(mappedBy = "englishTest", cascade = CascadeType.ALL)
     private Set<Question> questions;
 }

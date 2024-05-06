@@ -81,7 +81,7 @@ public class MissionService implements IMissionService {
         return ResponseEntity.ok("refreshed missions");
     }
 
-    @Scheduled(cron = "0 0 * * *") //execute the task every day at 0 AM
+    @Scheduled(cron = "0 0 0 * * *") //execute the task every day at 0 AM
     public void refresh() {
         List<UserMission> userMissions = userMissionRepository.findAll();
         for (UserMission mission : userMissions) {

@@ -61,6 +61,7 @@ public class SecurityConfiguration {
                         .requestMatchers(String.format("%s/chat/**", apiPrefix)).permitAll()
                         .requestMatchers(String.format("%s/learning-rooms/**", apiPrefix)).permitAll()
                         .requestMatchers(String.format("%s/english-levels/**", apiPrefix)).permitAll()
+                        .requestMatchers(String.format("%s/english-tests/**", apiPrefix)).permitAll()
 
 //                        .requestMatchers(String.format("%s/answers/**", apiPrefix)).hasRole(Role.LEARNER)
 //                        .requestMatchers(String.format("%s/chat/**", apiPrefix)).hasRole(Role.LEARNER)
