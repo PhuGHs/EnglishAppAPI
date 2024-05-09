@@ -31,4 +31,14 @@ public class UserController {
     public ResponseEntity<?> changeUserInfo(@PathVariable Long userId, @RequestBody UserInformationDto userInformationDto) {
         return userService.changeUserInformation(userId, userInformationDto);
     }
+
+    @GetMapping("/{userId}/recommend-user-based-on-common-interests")
+    public ResponseEntity<?> recommendUserBasedOnCommonInterests(@PathVariable Long userId) {
+        return searchService.recommendUsersBasedOnCommonInterests(userId);
+    }
+
+    @GetMapping("/{userId}/recommend-user-based-on-englishLevel")
+    public ResponseEntity<?> recommendUserBasedOnEnglishLevel(@PathVariable Long userId, @RequestParam int pageNumber, @RequestParam int pageSize) {
+        return searchService.recommendUsersBasedOnEnglishLevel(userId, pageNumber, pageSize);
+    }
 }

@@ -1,6 +1,7 @@
 package com.example.EnglishAppAPI.entities.indexes;
 
 import com.example.EnglishAppAPI.entities.EnglishLevel;
+import com.example.EnglishAppAPI.entities.Interest;
 import com.example.EnglishAppAPI.entities.UserEntity;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
@@ -9,6 +10,8 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
+
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -29,7 +32,10 @@ public class UserDocument {
     private int followingCount = 0;
     @Field(name = "followersCount", type = FieldType.Integer)
     private int followersCount = 0;
+    @Field(name = "englishLevel", type = FieldType.Object)
     private EnglishLevel englishLevel;
+    @Field(name = "interests", type = FieldType.Nested)
+    private Set<Interest> interests;
 
     public static UserDocument fromUserEntity(UserEntity userEntity) {
         UserDocument userDocument = new UserDocument();
@@ -41,6 +47,7 @@ public class UserDocument {
         userDocument.followingCount = userEntity.getFollowingCount();
         userDocument.followersCount = userEntity.getFollowersCount();
         userDocument.englishLevel = userEntity.getEnglishLevel();
+        userDocument.interests = userEntity.getInterests();
         return userDocument;
     }
 }

@@ -8,6 +8,7 @@ import com.example.EnglishAppAPI.exceptions.NotFoundException;
 import com.example.EnglishAppAPI.mapstruct.dtos.DiscussionPostDto;
 import com.example.EnglishAppAPI.mapstruct.enums.DiscussionOrderBy;
 import com.example.EnglishAppAPI.mapstruct.mappers.DiscussionMapper;
+import com.example.EnglishAppAPI.repositories.elas.DiscussionDocumentRepository;
 import com.example.EnglishAppAPI.responses.ApiResponse;
 import com.example.EnglishAppAPI.responses.ApiResponseStatus;
 import com.example.EnglishAppAPI.repositories.DiscussionRepository;
@@ -33,13 +34,15 @@ public class DiscussionService implements IDiscussionService {
     private final UserRepository userRepository;
     private final EnglishTopicRepository englishTopicRepository;
     private final DiscussionMapper discussionMapper;
+    private final DiscussionDocumentRepository discussionDocumentRepository;
 
     @Autowired
-    public DiscussionService(DiscussionRepository discussionRepository, UserRepository userRepository, EnglishTopicRepository englishTopicRepository, DiscussionMapper discussionMapper) {
+    public DiscussionService(DiscussionRepository discussionRepository, UserRepository userRepository, EnglishTopicRepository englishTopicRepository, DiscussionMapper discussionMapper, DiscussionDocumentRepository discussionDocumentRepository) {
         this.discussionRepository = discussionRepository;
         this.userRepository = userRepository;
         this.englishTopicRepository = englishTopicRepository;
         this.discussionMapper = discussionMapper;
+        this.discussionDocumentRepository = discussionDocumentRepository;
     }
 
     @Override
@@ -70,7 +73,8 @@ public class DiscussionService implements IDiscussionService {
                 .topic(topic)
                 .answers(new HashSet<>())
                 .build();
-        discussionRepository.save(discussion);
+        discussion = discussionRepository.save(discussion);
+        discussionDocumentRepository.save(discussionMapper.toDocument(discussion));
         return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(ApiResponseStatus.SUCCESS, "Created a new discussion", discussionMapper.toDto(discussion)));
     }
 
@@ -87,7 +91,8 @@ public class DiscussionService implements IDiscussionService {
                 .orElseThrow(() -> new NotFoundException("Can't find the topic with the provided id"));
         dis.setTopic(topic);
         dis.setTitle(discussion.getTitle());
-        discussionRepository.save(dis);
+        dis = discussionRepository.save(dis);
+        discussionDocumentRepository.save(discussionMapper.toDocument(dis));
         return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(ApiResponseStatus.SUCCESS, "discussion was updated", discussionMapper.toDto(dis)));
     }
 

@@ -8,5 +8,6 @@ import java.io.IOException;
 @Component
 public interface ISearchService {
     ResponseEntity<?> fuzzySearchUserFullName(String userName) throws IOException;
-    ResponseEntity<?> recommendUsersBasedOnCommonInterests();
+    ResponseEntity<?> recommendUsersBasedOnCommonInterests(Long currentUserId);
+    ResponseEntity<?> recommendUsersBasedOnEnglishLevel(Long currentUserId, int pageNumber, int pageSize);
 }
