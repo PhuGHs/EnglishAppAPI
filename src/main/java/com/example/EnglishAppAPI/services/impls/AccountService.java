@@ -1,6 +1,7 @@
 package com.example.EnglishAppAPI.services.impls;
 
 import com.example.EnglishAppAPI.configuration.security.JwtGenerator;
+import com.example.EnglishAppAPI.entities.indexes.UserDocument;
 import com.example.EnglishAppAPI.exceptions.ErrorResponse;
 import com.example.EnglishAppAPI.mapstruct.dtos.EmailVerificationDto;
 import com.example.EnglishAppAPI.mapstruct.dtos.LoginDto;
@@ -10,6 +11,7 @@ import com.example.EnglishAppAPI.entities.Role;
 import com.example.EnglishAppAPI.entities.UserEntity;
 import com.example.EnglishAppAPI.exceptions.NotFoundException;
 import com.example.EnglishAppAPI.exceptions.UnauthorizedException;
+import com.example.EnglishAppAPI.repositories.elas.UserDocumentRepository;
 import com.example.EnglishAppAPI.responses.ApiResponse;
 import com.example.EnglishAppAPI.responses.ApiResponseStatus;
 import com.example.EnglishAppAPI.responses.AuthResponse;
@@ -37,6 +39,7 @@ public class AccountService implements IAccountService {
     private final AccountRepository accountRepository;
     private final RoleRepository roleRepository;
     private final UserRepository userRepository;
+    private final UserDocumentRepository userDocumentRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtGenerator jwtGenerator;
@@ -44,10 +47,11 @@ public class AccountService implements IAccountService {
     private EmailService emailService;
 
     @Autowired
-    public AccountService(AccountRepository accountRepository, RoleRepository roleRepository, UserRepository userRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtGenerator jwtGenerator) {
+    public AccountService(AccountRepository accountRepository, RoleRepository roleRepository, UserRepository userRepository, UserDocumentRepository userDocumentRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtGenerator jwtGenerator) {
         this.accountRepository = accountRepository;
         this.roleRepository = roleRepository;
         this.userRepository = userRepository;
+        this.userDocumentRepository = userDocumentRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtGenerator = jwtGenerator;
@@ -63,7 +67,8 @@ public class AccountService implements IAccountService {
             return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(new ApiResponse(ApiResponseStatus.FAIL, "Passwords are not match!!", ""));
         }
         UserEntity user = new UserEntity(registerDto.getFullName(), registerDto.getIsMale());
-        userRepository.save(user);
+        user = userRepository.save(user);
+        userDocumentRepository.save(UserDocument.fromUserEntity(user));
         Account account = new Account(registerDto.getEmail(), passwordEncoder.encode(registerDto.getPassword()));
         Role role = roleRepository.findByRoleName(Role.LEARNER).orElseThrow(() -> new NotFoundException("cannot find the role"));
         account.setRole(role);
@@ -82,7 +87,8 @@ public class AccountService implements IAccountService {
             return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(new ApiResponse(ApiResponseStatus.FAIL, "Passwords are not match!!", ""));
         }
         UserEntity user = new UserEntity(registerDto.getFullName(), registerDto.getIsMale());
-        userRepository.save(user);
+        user = userRepository.save(user);
+        userDocumentRepository.save(UserDocument.fromUserEntity(user));
         Account account = new Account(registerDto.getEmail(), passwordEncoder.encode(registerDto.getPassword()));
         Role role = roleRepository.findByRoleName(Role.ADMIN).orElseThrow(() -> new NotFoundException("cannot find the role"));
         account.setRole(role);

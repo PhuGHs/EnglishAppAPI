@@ -6,6 +6,7 @@ import com.example.EnglishAppAPI.entities.UserEntity;
 import com.example.EnglishAppAPI.exceptions.NotFoundException;
 import com.example.EnglishAppAPI.mapstruct.dtos.AnswerDto;
 import com.example.EnglishAppAPI.mapstruct.dtos.AnswerPostDto;
+import com.example.EnglishAppAPI.mapstruct.dtos.NotificationPostDto;
 import com.example.EnglishAppAPI.mapstruct.mappers.AnswerMapper;
 import com.example.EnglishAppAPI.responses.ApiResponse;
 import com.example.EnglishAppAPI.responses.ApiResponseStatus;
@@ -30,13 +31,15 @@ public class AnswerService implements IAnswerService {
     private final UserRepository userRepository;
     private final DiscussionRepository discussionRepository;
     private final AnswerMapper mapper;
+    private final NotificationService notificationService;
 
     @Autowired
-    public AnswerService(AnswerRepository answerRepository, UserRepository userRepository, DiscussionRepository discussionRepository, AnswerMapper mapper) {
+    public AnswerService(AnswerRepository answerRepository, UserRepository userRepository, DiscussionRepository discussionRepository, AnswerMapper mapper, NotificationService notificationService) {
         this.answerRepository = answerRepository;
         this.userRepository = userRepository;
         this.discussionRepository = discussionRepository;
         this.mapper = mapper;
+        this.notificationService = notificationService;
     }
 
     @Override
@@ -69,6 +72,7 @@ public class AnswerService implements IAnswerService {
 
         Answer answer1 = answerRepository.save(answer);
         AnswerDto answerGetDto = mapper.toDto(answer1);
+        notificationService.addNotification(new NotificationPostDto(answerDto.getUserId(), discussion.getUser().getUserId(), user.getFullName() + "commented on your discussion", false, LocalDateTime.now(), answer1.getAnswerId(), discussion.getId()));
         return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(ApiResponseStatus.SUCCESS, "Answered the discussion successfully", answerGetDto));
     }
 

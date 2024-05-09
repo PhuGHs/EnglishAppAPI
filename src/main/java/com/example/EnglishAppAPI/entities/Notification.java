@@ -3,6 +3,7 @@ package com.example.EnglishAppAPI.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Entity
@@ -30,11 +31,11 @@ public class Notification {
     private String message;
 
     @Column(name = "isRead")
-    private boolean isRead;
+    private boolean isRead = false;
 
     @Column(name = "created_at")
     @Temporal(TemporalType.TIMESTAMP)
-    private Date createdAt;
+    private LocalDateTime createdAt;
 
     @Column(name = "created_item_id")
     private Long createdItemId;

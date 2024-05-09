@@ -50,6 +50,7 @@ public class SecurityConfiguration {
                         .requestMatchers("/swagger/**").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers(String.format("%s/auth/**", apiPrefix)).permitAll()
+                        .requestMatchers(String.format("%s/users/**", apiPrefix)).permitAll()
                         .requestMatchers(String.format("%s/english-topics/**", apiPrefix)).permitAll()
                         .requestMatchers(String.format("%s/discussions/**", apiPrefix)).permitAll()
                         .requestMatchers(String.format("%s/interests/**", apiPrefix)).permitAll()
