@@ -18,6 +18,7 @@ import com.example.EnglishAppAPI.services.interfaces.IChatService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -26,13 +27,14 @@ import java.util.*;
 @Service
 public class ChatService implements IChatService {
     @Autowired
-    public ChatService(UserRepository userRepository, MessageRoomRepository messageRoomRepository, MessageRoomMapper messageRoomMapper, MessageMapper messageMapper, UserMapper userMapper, MessageRepository messageRepository) {
+    public ChatService(UserRepository userRepository, MessageRoomRepository messageRoomRepository, MessageRoomMapper messageRoomMapper, MessageMapper messageMapper, UserMapper userMapper, MessageRepository messageRepository, CloudinaryService cloudinaryService) {
         this.userRepository = userRepository;
         this.messageRoomRepository = messageRoomRepository;
         this.messageRoomMapper = messageRoomMapper;
         this.messageMapper = messageMapper;
         this.userMapper = userMapper;
         this.messageRepository = messageRepository;
+        this.cloudinaryService = cloudinaryService;
     }
     private final UserRepository userRepository;
     private final MessageRoomRepository messageRoomRepository;
@@ -40,8 +42,10 @@ public class ChatService implements IChatService {
     private final MessageMapper messageMapper;
     private final UserMapper userMapper;
     private final MessageRepository messageRepository;
+    private final CloudinaryService cloudinaryService;
+
     @Autowired
-    private CloudinaryService cloudinaryService;
+    private SimpMessagingTemplate simpMessagingTemplate;
     @Override
     public ResponseEntity<?> createConversation(ConversationPostDto conversationPostDto) {
         UserEntity sender = userRepository.findById(conversationPostDto.getSenderId())
@@ -98,6 +102,7 @@ public class ChatService implements IChatService {
         messageRoom.setLastSentMessage(message);
         messageRoom.setLastSentUser(message.getSender());
         messageRoomRepository.save(messageRoom);
+        simpMessagingTemplate.convertAndSend("/chatroom/" + messagePostDto.getMessageRoomId(), messageMapper.toDto(message));
         return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "send message", messageMapper.toDto(message)));
     }
 

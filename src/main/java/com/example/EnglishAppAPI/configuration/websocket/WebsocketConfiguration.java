@@ -1,4 +1,4 @@
-package com.example.EnglishAppAPI.configuration;
+package com.example.EnglishAppAPI.configuration.websocket;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Configuration;

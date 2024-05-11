@@ -2,10 +2,12 @@ package com.example.EnglishAppAPI.services.impls;
 
 import com.example.EnglishAppAPI.entities.Answer;
 import com.example.EnglishAppAPI.entities.Discussion;
+import com.example.EnglishAppAPI.entities.Notification;
 import com.example.EnglishAppAPI.entities.UserEntity;
 import com.example.EnglishAppAPI.exceptions.NotFoundException;
 import com.example.EnglishAppAPI.mapstruct.dtos.AnswerDto;
 import com.example.EnglishAppAPI.mapstruct.dtos.AnswerPostDto;
+import com.example.EnglishAppAPI.mapstruct.dtos.NotificationDto;
 import com.example.EnglishAppAPI.mapstruct.dtos.NotificationPostDto;
 import com.example.EnglishAppAPI.mapstruct.mappers.AnswerMapper;
 import com.example.EnglishAppAPI.responses.ApiResponse;
@@ -21,6 +23,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -32,14 +35,16 @@ public class AnswerService implements IAnswerService {
     private final DiscussionRepository discussionRepository;
     private final AnswerMapper mapper;
     private final NotificationService notificationService;
+    private SimpMessagingTemplate simpMessagingTemplate;
 
     @Autowired
-    public AnswerService(AnswerRepository answerRepository, UserRepository userRepository, DiscussionRepository discussionRepository, AnswerMapper mapper, NotificationService notificationService) {
+    public AnswerService(AnswerRepository answerRepository, UserRepository userRepository, DiscussionRepository discussionRepository, AnswerMapper mapper, NotificationService notificationService, SimpMessagingTemplate simpMessagingTemplate) {
         this.answerRepository = answerRepository;
         this.userRepository = userRepository;
         this.discussionRepository = discussionRepository;
         this.mapper = mapper;
         this.notificationService = notificationService;
+        this.simpMessagingTemplate = simpMessagingTemplate;
     }
 
     @Override
@@ -72,7 +77,8 @@ public class AnswerService implements IAnswerService {
 
         Answer answer1 = answerRepository.save(answer);
         AnswerDto answerGetDto = mapper.toDto(answer1);
-        notificationService.addNotification(new NotificationPostDto(answerDto.getUserId(), discussion.getUser().getUserId(), user.getFullName() + "commented on your discussion", false, LocalDateTime.now(), answer1.getAnswerId(), discussion.getId()));
+        NotificationDto notification = notificationService.addNotification(new NotificationPostDto(answerDto.getUserId(), discussion.getUser().getUserId(), user.getFullName() + "commented on your discussion", false, LocalDateTime.now(), answer1.getAnswerId(), discussion.getId()));
+        simpMessagingTemplate.convertAndSend("/user/"+ notification.getReceiver().getUserId(), notification);
         return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(ApiResponseStatus.SUCCESS, "Answered the discussion successfully", answerGetDto));
     }
 

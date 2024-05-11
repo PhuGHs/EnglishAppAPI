@@ -2,6 +2,7 @@ package com.example.EnglishAppAPI.services.impls;
 
 import com.example.EnglishAppAPI.entities.Notification;
 import com.example.EnglishAppAPI.exceptions.NotFoundException;
+import com.example.EnglishAppAPI.mapstruct.dtos.NotificationDto;
 import com.example.EnglishAppAPI.mapstruct.dtos.NotificationPostDto;
 import com.example.EnglishAppAPI.mapstruct.mappers.NotificationMapper;
 import com.example.EnglishAppAPI.repositories.NotificationRepository;
@@ -60,10 +61,10 @@ public class NotificationService implements INotificationService {
     }
 
     @Override
-    public Notification addNotification(NotificationPostDto notificationPostDto) {
+    public NotificationDto addNotification(NotificationPostDto notificationPostDto) {
         Notification notification = notificationMapper.toEntity(notificationPostDto);
         notification = notificationRepository.save(notification);
         //send to client
-        return notification;
+        return notificationMapper.toDto(notification);
     }
 }
