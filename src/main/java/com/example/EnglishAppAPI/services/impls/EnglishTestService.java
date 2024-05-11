@@ -1,15 +1,20 @@
 package com.example.EnglishAppAPI.services.impls;
 
+import com.example.EnglishAppAPI.entities.EnglishLevel;
 import com.example.EnglishAppAPI.entities.EnglishTest;
 import com.example.EnglishAppAPI.entities.Question;
+import com.example.EnglishAppAPI.entities.UserEntity;
 import com.example.EnglishAppAPI.exceptions.ErrorResponse;
 import com.example.EnglishAppAPI.exceptions.NotFoundException;
 import com.example.EnglishAppAPI.mapstruct.dtos.EnglishTestPostDto;
 import com.example.EnglishAppAPI.mapstruct.dtos.QuestionPostDto;
+import com.example.EnglishAppAPI.mapstruct.dtos.SubmitTestDto;
 import com.example.EnglishAppAPI.mapstruct.mappers.EnglishTestMapper;
 import com.example.EnglishAppAPI.mapstruct.mappers.QuestionMapper;
+import com.example.EnglishAppAPI.repositories.EnglishLevelRepository;
 import com.example.EnglishAppAPI.repositories.EnglishTestRepository;
 import com.example.EnglishAppAPI.repositories.QuestionRepository;
+import com.example.EnglishAppAPI.repositories.UserRepository;
 import com.example.EnglishAppAPI.responses.ApiResponse;
 import com.example.EnglishAppAPI.responses.ApiResponseStatus;
 import com.example.EnglishAppAPI.services.interfaces.IEnglishTestService;
@@ -26,13 +31,17 @@ public class EnglishTestService implements IEnglishTestService {
     private final EnglishTestMapper englishTestMapper;
     private final QuestionRepository questionRepository;
     private final QuestionMapper questionMapper;
+    private final EnglishLevelRepository englishLevelRepository;
+    private final UserRepository userRepository;
 
     @Autowired
-    public EnglishTestService(EnglishTestRepository englishTestRepository, EnglishTestMapper englishTestMapper, QuestionRepository questionRepository, QuestionMapper questionMapper) {
+    public EnglishTestService(EnglishTestRepository englishTestRepository, EnglishTestMapper englishTestMapper, QuestionRepository questionRepository, QuestionMapper questionMapper, EnglishLevelRepository englishLevelRepository, UserRepository userRepository) {
         this.englishTestRepository = englishTestRepository;
         this.englishTestMapper = englishTestMapper;
         this.questionRepository = questionRepository;
         this.questionMapper = questionMapper;
+        this.englishLevelRepository = englishLevelRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -75,8 +84,26 @@ public class EnglishTestService implements IEnglishTestService {
     }
 
     @Override
-    public ResponseEntity<?> submitTest() {
-        return null;
+    public ResponseEntity<?> submitTest(SubmitTestDto submitTestDto) {
+        Long level;
+        int score = submitTestDto.getScore();
+        if (score >= 0 && score <= 10) {
+            level = 0L;
+        } else if (score >= 11 && score <= 20) {
+            level = 1L;
+        } else if (score >= 21 && score <= 30) {
+            level = 2L;
+        } else if (score >= 31 && score <= 40) {
+            level = 3L;
+        } else {
+            return ResponseEntity.badRequest().body("Invalid score");
+        }
+        EnglishLevel englishLevel = englishLevelRepository.findById(level)
+                .orElseThrow(() -> new NotFoundException("cant find the english level"));
+        UserEntity user = userRepository.findById(submitTestDto.getUserId())
+                .orElseThrow(() -> new NotFoundException("user not found"));
+        user.setEnglishLevel(englishLevel);
+        return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "update english level", ""));
     }
 
     @Override

@@ -2,6 +2,7 @@ package com.example.EnglishAppAPI.controllers;
 
 import com.example.EnglishAppAPI.mapstruct.dtos.EnglishTestPostDto;
 import com.example.EnglishAppAPI.mapstruct.dtos.QuestionPostDto;
+import com.example.EnglishAppAPI.mapstruct.dtos.SubmitTestDto;
 import com.example.EnglishAppAPI.services.impls.EnglishTestService;
 import jakarta.validation.Valid;
 import lombok.Getter;
@@ -41,5 +42,10 @@ public class EnglishTestController {
     @PostMapping("/insert-questions")
     public ResponseEntity<?> insertQuestionsToEnglishTest(@RequestBody @Valid QuestionPostDto questionPostDto) {
         return englishTestService.insertQuestionToEnglishTest(questionPostDto);
+    }
+
+    @PostMapping("/submit-test")
+    public ResponseEntity<?> takeEnglishTest(@RequestBody SubmitTestDto submitTestDto) {
+        return englishTestService.submitTest(submitTestDto);
     }
 }
