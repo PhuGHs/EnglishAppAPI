@@ -88,7 +88,6 @@ public class AccountService implements IAccountService {
         }
         UserEntity user = new UserEntity(registerDto.getFullName(), registerDto.getIsMale());
         user = userRepository.save(user);
-        userDocumentRepository.save(UserDocument.fromUserEntity(user));
         Account account = new Account(registerDto.getEmail(), passwordEncoder.encode(registerDto.getPassword()));
         Role role = roleRepository.findByRoleName(Role.ADMIN).orElseThrow(() -> new NotFoundException("cannot find the role"));
         account.setRole(role);
@@ -101,7 +100,7 @@ public class AccountService implements IAccountService {
     public ResponseEntity<ApiResponse> login(LoginDto loginDto) {
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginDto.getEmail(), loginDto.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        Optional<Account> account =accountRepository.findByEmail(loginDto.getEmail());
+        Optional<Account> account = accountRepository.findByEmail(loginDto.getEmail());
         if (account.isEmpty()) {
             throw new NotFoundException("Account is not found");
         }

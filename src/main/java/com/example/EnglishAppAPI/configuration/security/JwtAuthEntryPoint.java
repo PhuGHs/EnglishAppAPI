@@ -17,10 +17,12 @@ import java.io.IOException;
 public class JwtAuthEntryPoint implements AuthenticationEntryPoint {
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json");
         if (authException instanceof BadCredentialsException) {
-            ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponse(HttpStatus.UNAUTHORIZED, "Incorrect email or password"));
+            response.getWriter().write("{\"error\":\"Incorrect email or password\"}");
         } else {
-            ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponse(HttpStatus.UNAUTHORIZED, "Authentication failed"));
+            response.getWriter().write("{\"error\":\"Authentication failed\"}");
         }
     }
 }

@@ -18,14 +18,8 @@ import java.util.Collection;
 public class CustomAccessDeniedHandler implements AccessDeniedHandler {
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException, ServletException {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Collection<SimpleGrantedAuthority> authorities = (Collection<SimpleGrantedAuthority>) authentication.getAuthorities();
-        if (authorities.stream().anyMatch(auth -> auth.getAuthority().equals(Role.ADMIN))) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Admin access denied");
-        } else if (authorities.stream().anyMatch(auth -> auth.getAuthority().equals(Role.LEARNER))) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Learner access denied");
-        } else {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied");
-        }
+        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+        response.setContentType("application/json");
+        response.getWriter().write("{\"error\":\"Access denied\"}");
     }
 }

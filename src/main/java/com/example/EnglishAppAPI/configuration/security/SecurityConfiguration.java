@@ -42,56 +42,25 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-//                .addFilterBefore(getJwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                 .csrf(AbstractHttpConfigurer::disable)
+                .addFilterBefore(getJwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-//                .exceptionHandling(eh -> eh.accessDeniedHandler(customAccessDeniedHandler).authenticationEntryPoint(jwtAuthEntryPoint))
+                .exceptionHandling(eh -> eh.authenticationEntryPoint(jwtAuthEntryPoint).accessDeniedHandler(customAccessDeniedHandler))
                 .authorizeHttpRequests(req -> req
                         .requestMatchers("/swagger/**").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers(String.format("%s/auth/**", apiPrefix)).permitAll()
-                        .requestMatchers(String.format("%s/users/**", apiPrefix)).permitAll()
-                        .requestMatchers(String.format("%s/english-topics/**", apiPrefix)).permitAll()
-                        .requestMatchers(String.format("%s/discussions/**", apiPrefix)).permitAll()
-                        .requestMatchers(String.format("%s/interests/**", apiPrefix)).permitAll()
-                        .requestMatchers(String.format("%s/short-stories/**", apiPrefix)).permitAll()
-                        .requestMatchers(String.format("%s/reports/**", apiPrefix)).permitAll()
-                        .requestMatchers(String.format("%s/answers/**", apiPrefix)).permitAll()
-                        .requestMatchers(String.format("%s/missions/**", apiPrefix)).permitAll()
-                        .requestMatchers(String.format("%s/leaderboard/**", apiPrefix)).permitAll()
-                        .requestMatchers(String.format("%s/chat/**", apiPrefix)).permitAll()
-                        .requestMatchers(String.format("%s/learning-rooms/**", apiPrefix)).permitAll()
-                        .requestMatchers(String.format("%s/english-levels/**", apiPrefix)).permitAll()
-                        .requestMatchers(String.format("%s/english-tests/**", apiPrefix)).permitAll()
-
-//                        .requestMatchers(String.format("%s/answers/**", apiPrefix)).hasRole(Role.LEARNER)
-//                        .requestMatchers(String.format("%s/chat/**", apiPrefix)).hasRole(Role.LEARNER)
-//                        .requestMatchers(String.format("%s/discussions/**", apiPrefix)).hasRole(Role.LEARNER)
-//                        .requestMatchers(String.format("%s/followers/**", apiPrefix)).hasRole(Role.LEARNER)
-//
-//
-//                        //english-levels
-//                        .requestMatchers(HttpMethod.GET, String.format("%s/english-levels", apiPrefix)).hasRole(Role.LEARNER)
-//                        .requestMatchers(HttpMethod.POST, String.format("%s/english-levels", apiPrefix)).hasRole(Role.ADMIN)
-//
-//                        //english-topic
-//                        .requestMatchers(HttpMethod.GET, String.format("%s/english-topics/**", apiPrefix)).hasAnyRole(Role.LEARNER, Role.ADMIN)
-//                        .requestMatchers(HttpMethod.POST, String.format("%s/english-topics/**", apiPrefix)).hasRole(Role.ADMIN)
-//                        .requestMatchers("api/v1/**").permitAll()
-                        .anyRequest().authenticated());
-        http.cors(new Customizer<CorsConfigurer<HttpSecurity>>() {
-            @Override
-            public void customize(CorsConfigurer<HttpSecurity> httpSecurityCorsConfigurer) {
-                CorsConfiguration configuration = new CorsConfiguration();
-                configuration.setAllowedOrigins(List.of("*"));
-                configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-                configuration.setAllowedHeaders(Arrays.asList("authorization", "content-type", "x-auth-token"));
-                configuration.setExposedHeaders(List.of("x-auth-token"));
-                UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-                source.registerCorsConfiguration("/**", configuration);
-                httpSecurityCorsConfigurer.configurationSource(source);
-            }
-        });
+                        .requestMatchers(String.format("%s/notifications/**", apiPrefix)).permitAll()
+                        .anyRequest().authenticated())
+                .cors(cors -> cors
+                        .configurationSource(request -> {
+                            CorsConfiguration configuration = new CorsConfiguration();
+                            configuration.setAllowedOrigins(List.of("*"));
+                            configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+                            configuration.setAllowedHeaders(Arrays.asList("authorization", "content-type", "x-auth-token"));
+                            configuration.setExposedHeaders(List.of("x-auth-token"));
+                            return configuration;
+                        }));
         return http.build();
     }
 

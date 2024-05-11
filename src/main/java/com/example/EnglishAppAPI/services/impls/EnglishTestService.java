@@ -110,7 +110,8 @@ public class EnglishTestService implements IEnglishTestService {
     public ResponseEntity<?> insertQuestionToEnglishTest(QuestionPostDto questionPostDto) {
         EnglishTest englishTest = englishTestRepository.findById(questionPostDto.getEnglishTestId())
                 .orElseThrow(() -> new NotFoundException("english test not found"));
-        if (questionPostDto.getOptions().size() > englishTest.getNumberOfQuestions()) {
+        List<Question> questions = questionRepository.findQuestionsByEnglishTest(englishTest);
+        if (questions.size() > englishTest.getNumberOfQuestions()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse(HttpStatus.BAD_REQUEST, "number of questions exceed the maxium number of questions of the english test"));
         }
         Question question = questionMapper.toEntity(questionPostDto);

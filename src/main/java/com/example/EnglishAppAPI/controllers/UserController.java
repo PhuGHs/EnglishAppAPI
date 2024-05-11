@@ -6,13 +6,14 @@ import com.example.EnglishAppAPI.services.impls.UserService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 
 @RestController
 @RequestMapping("${api.prefix}/users")
-//@SecurityRequirement(name = "bearerAuth")
+@SecurityRequirement(name = "bearerAuth")
 public class UserController {
     private final SearchService searchService;
     private final UserService userService;
@@ -27,17 +28,20 @@ public class UserController {
         return searchService.fuzzySearchUserFullName(fullName);
     }
 
-    @PutMapping("/${userId}change-info")
+    @PutMapping("/{userId}/change-info")
+    @PreAuthorize("hasAuthority('LEARNER')")
     public ResponseEntity<?> changeUserInfo(@PathVariable Long userId, @RequestBody UserInformationDto userInformationDto) {
         return userService.changeUserInformation(userId, userInformationDto);
     }
 
     @GetMapping("/{userId}/recommend-user-based-on-common-interests")
+    @PreAuthorize("hasAuthority('LEARNER')")
     public ResponseEntity<?> recommendUserBasedOnCommonInterests(@PathVariable Long userId) {
         return searchService.recommendUsersBasedOnCommonInterests(userId);
     }
 
     @GetMapping("/{userId}/recommend-user-based-on-englishLevel")
+    @PreAuthorize("hasAuthority('LEARNER')")
     public ResponseEntity<?> recommendUserBasedOnEnglishLevel(@PathVariable Long userId, @RequestParam int pageNumber, @RequestParam int pageSize) {
         return searchService.recommendUsersBasedOnEnglishLevel(userId, pageNumber, pageSize);
     }
