@@ -5,6 +5,8 @@ import com.example.EnglishAppAPI.entities.LearningRoom;
 import com.example.EnglishAppAPI.entities.Participant;
 import com.example.EnglishAppAPI.entities.UserEntity;
 import com.example.EnglishAppAPI.exceptions.NotFoundException;
+import com.example.EnglishAppAPI.mapstruct.dtos.JoinLearningRoom;
+import com.example.EnglishAppAPI.mapstruct.dtos.JoinLearningRoomDto;
 import com.example.EnglishAppAPI.mapstruct.dtos.LearningRoomPostInstantDto;
 import com.example.EnglishAppAPI.mapstruct.dtos.LearningRoomPostLaterDto;
 import com.example.EnglishAppAPI.mapstruct.mappers.LearningRoomMapper;
@@ -27,10 +29,7 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class LearningRoomService implements ILearningRoomService {
@@ -66,6 +65,8 @@ public class LearningRoomService implements ILearningRoomService {
                 .maxParticipants(learningRoomPostDto.getMaxParticipants())
                 .duration(learningRoomPostDto.getDuration())
                 .isLive(true)
+                .isPrivate(learningRoomPostDto.isPrivate())
+                .password(learningRoomPostDto.getPassword())
                 .topic(topic)
                 .build();
 
@@ -98,6 +99,8 @@ public class LearningRoomService implements ILearningRoomService {
                 .duration(learningRoomPostLaterDto.getDuration())
                 .isLive(false)
                 .maxParticipants(learningRoomPostLaterDto.getMaxParticipants())
+                .password(learningRoomPostLaterDto.getPassword())
+                .isPrivate(learningRoomPostLaterDto.isPrivate())
                 .topic(topic)
                 .build();
 
@@ -124,21 +127,32 @@ public class LearningRoomService implements ILearningRoomService {
     }
 
     @Override
-    public ResponseEntity<?> joinLearningRoom(Long roomId, Long userId) {
+    public ResponseEntity<?> joinLearningRoom(JoinLearningRoomDto joinLearningRoom) {
+        Long roomId = joinLearningRoom.getRoomId();
+        Long userId = joinLearningRoom.getUserId();
         LearningRoom learningRoom = learningRoomRepository.findById(roomId)
                 .orElseThrow(() -> new NotFoundException("learning room not found"));
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("user not found"));
-        Participant participant = Participant.builder()
-                .joinTime(LocalDateTime.now())
-                .room(learningRoom)
-                .user(user)
-                .isSpeaker(false)
-                .isOwner(false)
-                .build();
-        learningRoom.getParticipants().add(participant);
-        learningRoom = learningRoomRepository.save(learningRoom);
-        return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "joined the room", learningRoomMapper.toDto(learningRoom)));
+        if (participantRepository.checkIfExistedInAnotherRoom(userId, roomId)) {
+            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(new ApiResponse(ApiResponseStatus.FAIL, "you are not able to join multiple room ats once", ""));
+        }
+        if (learningRoom.isPrivate() && Objects.equals(learningRoom.getPassword(), joinLearningRoom.getPassword())) {
+            if (learningRoom.getTopic().getEnglishLevel().getLevelId() > user.getEnglishLevel().getLevelId()) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ApiResponse(ApiResponseStatus.FAIL, "your level is not suitable for this room", "level"));
+            }
+            Participant participant = Participant.builder()
+                    .joinTime(LocalDateTime.now())
+                    .room(learningRoom)
+                    .user(user)
+                    .isSpeaker(false)
+                    .isOwner(false)
+                    .build();
+            learningRoom.getParticipants().add(participant);
+            learningRoom = learningRoomRepository.save(learningRoom);
+            return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "joined the room", learningRoomMapper.toDto(learningRoom)));
+        }
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ApiResponse(ApiResponseStatus.FAIL, "password is not correct", "password"));
     }
 
     @Override

@@ -27,6 +27,8 @@ public class LearningRoomDto {
     private int duration;
     @JsonProperty("is_live")
     private boolean isLive;
+    @JsonProperty("is_private")
+    private boolean isPrivate = false;
     @JsonProperty("topic")
     private EnglishTopicDto topic;
     @JsonProperty("participants")

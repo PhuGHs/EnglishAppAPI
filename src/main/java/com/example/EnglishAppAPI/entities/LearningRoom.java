@@ -41,7 +41,13 @@ public class LearningRoom {
     private int maxParticipants;
 
     @Column(name = "is_live", nullable = false)
-    private boolean isLive = false;
+    private boolean isLive;
+
+    @Column(name = "is_private")
+    private boolean isPrivate;
+
+    @Column(name = "password", nullable = true)
+    private String password;
 
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<Participant> participants = new HashSet<>();

@@ -32,6 +32,10 @@ public class LearningRoomPostLaterDto {
     @JsonProperty("topic_id")
     @NotNull(message = "english topic is required")
     private Long englishTopicId;
+    @JsonProperty("is_private")
+    private boolean isPrivate;
+    @JsonProperty("password")
+    private String password;
     @JsonProperty("user_id")
     @NotNull(message = "userId is required")
     private Long userId;

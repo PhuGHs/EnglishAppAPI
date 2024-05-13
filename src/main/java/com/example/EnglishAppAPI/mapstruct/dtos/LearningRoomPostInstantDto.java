@@ -28,6 +28,10 @@ public class LearningRoomPostInstantDto {
     @JsonProperty("duration")
     @Range(min = 1, max = 4, message = "the duration must be between 1 to 4 hours")
     private int duration;
+    @JsonProperty("is_private")
+    private boolean isPrivate;
+    @JsonProperty("password")
+    private String password;
     @JsonProperty("topic_id")
     @NotNull(message = "english topic is required")
     private Long englishTopicId;

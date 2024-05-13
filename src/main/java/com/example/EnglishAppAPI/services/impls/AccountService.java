@@ -1,6 +1,7 @@
 package com.example.EnglishAppAPI.services.impls;
 
 import com.example.EnglishAppAPI.configuration.security.JwtGenerator;
+import com.example.EnglishAppAPI.entities.EnglishLevel;
 import com.example.EnglishAppAPI.entities.indexes.UserDocument;
 import com.example.EnglishAppAPI.exceptions.ErrorResponse;
 import com.example.EnglishAppAPI.mapstruct.dtos.EmailVerificationDto;
@@ -11,6 +12,7 @@ import com.example.EnglishAppAPI.entities.Role;
 import com.example.EnglishAppAPI.entities.UserEntity;
 import com.example.EnglishAppAPI.exceptions.NotFoundException;
 import com.example.EnglishAppAPI.exceptions.UnauthorizedException;
+import com.example.EnglishAppAPI.repositories.EnglishLevelRepository;
 import com.example.EnglishAppAPI.repositories.elas.UserDocumentRepository;
 import com.example.EnglishAppAPI.responses.ApiResponse;
 import com.example.EnglishAppAPI.responses.ApiResponseStatus;
@@ -43,11 +45,12 @@ public class AccountService implements IAccountService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtGenerator jwtGenerator;
+    private final EnglishLevelRepository englishLevelRepository;
     @Autowired
     private EmailService emailService;
 
     @Autowired
-    public AccountService(AccountRepository accountRepository, RoleRepository roleRepository, UserRepository userRepository, UserDocumentRepository userDocumentRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtGenerator jwtGenerator) {
+    public AccountService(AccountRepository accountRepository, RoleRepository roleRepository, UserRepository userRepository, UserDocumentRepository userDocumentRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtGenerator jwtGenerator, EnglishLevelRepository englishLevelRepository) {
         this.accountRepository = accountRepository;
         this.roleRepository = roleRepository;
         this.userRepository = userRepository;
@@ -55,6 +58,7 @@ public class AccountService implements IAccountService {
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtGenerator = jwtGenerator;
+        this.englishLevelRepository = englishLevelRepository;
     }
 
     @Override
@@ -67,6 +71,9 @@ public class AccountService implements IAccountService {
             return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(new ApiResponse(ApiResponseStatus.FAIL, "Passwords are not match!!", ""));
         }
         UserEntity user = new UserEntity(registerDto.getFullName(), registerDto.getIsMale());
+        EnglishLevel level = englishLevelRepository.findById(1L)
+                .orElseThrow(() -> new NotFoundException("english level not found"));
+        user.setEnglishLevel(level);
         user = userRepository.save(user);
         userDocumentRepository.save(UserDocument.fromUserEntity(user));
         Account account = new Account(registerDto.getEmail(), passwordEncoder.encode(registerDto.getPassword()));

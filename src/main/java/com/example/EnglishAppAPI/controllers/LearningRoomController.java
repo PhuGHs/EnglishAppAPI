@@ -40,7 +40,7 @@ public class LearningRoomController {
     @PostMapping("/join")
     @PreAuthorize("hasAuthority('LEARNER')")
     public ResponseEntity<?> joinLearningRoom(@RequestBody @Valid JoinLearningRoomDto joinLearningRoomDto) {
-        return learningRoomService.joinLearningRoom(joinLearningRoomDto.getRoomId(), joinLearningRoomDto.getUserId());
+        return learningRoomService.joinLearningRoom(joinLearningRoomDto);
     }
 
     @DeleteMapping("/participants/{participantId}")

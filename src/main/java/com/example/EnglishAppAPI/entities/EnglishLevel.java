@@ -1,5 +1,6 @@
 package com.example.EnglishAppAPI.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -26,9 +27,11 @@ public class EnglishLevel {
     private String description;
 
     @OneToMany(mappedBy = "englishLevel")
+    @JsonIgnore
     private Set<UserEntity> users = new HashSet<>();
 
     @OneToMany(mappedBy = "englishLevel")
+    @JsonIgnore
     private Set<EnglishTopic> topics = new HashSet<>();
 
     public EnglishLevel(String levelName, String description) {

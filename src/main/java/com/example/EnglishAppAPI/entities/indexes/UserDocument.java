@@ -32,8 +32,8 @@ public class UserDocument {
     private int followingCount = 0;
     @Field(name = "followersCount", type = FieldType.Integer)
     private int followersCount = 0;
-    @Field(name = "englishLevel", type = FieldType.Object)
-    private EnglishLevel englishLevel;
+    @Field(name = "englishLevel", type = FieldType.Text)
+    private String englishLevel;
     @Field(name = "interests", type = FieldType.Nested)
     private Set<Interest> interests;
 
@@ -46,7 +46,7 @@ public class UserDocument {
         userDocument.profilePicture = userEntity.getProfilePicture();
         userDocument.followingCount = userEntity.getFollowingCount();
         userDocument.followersCount = userEntity.getFollowersCount();
-        userDocument.englishLevel = userEntity.getEnglishLevel();
+        userDocument.englishLevel = userEntity.getEnglishLevel().getLevelName();
         userDocument.interests = userEntity.getInterests();
         return userDocument;
     }

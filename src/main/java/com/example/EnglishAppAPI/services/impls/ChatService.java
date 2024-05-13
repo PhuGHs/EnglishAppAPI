@@ -22,6 +22,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -86,9 +87,20 @@ public class ChatService implements IChatService {
 
     @Override
     public ResponseEntity<?> sendMessage(MessagePostDto messagePostDto) throws IOException {
-        Message message = messageMapper.toEntity(new MessagePostDto(messagePostDto.getMessageRoomId(), messagePostDto.getSenderId(), messagePostDto.getReceiverId(), messagePostDto.getMessage(), messagePostDto.isRead(), messagePostDto.getCreatedAt(), ""));
+        UserEntity sender = userRepository.findById(messagePostDto.getSenderId())
+                .orElseThrow(() -> new NotFoundException("sender not found"));
+        UserEntity receiver = userRepository.findById(messagePostDto.getReceiverId())
+                .orElseThrow(() -> new NotFoundException("receiver not found"));
         MessageRoom messageRoom = messageRoomRepository.findById(messagePostDto.getMessageRoomId())
                         .orElseThrow(() -> new NotFoundException("message room not found"));
+        Message message = Message.builder()
+                .messageRoom(messageRoom)
+                .sender(sender)
+                .receiver(receiver)
+                .message(messagePostDto.getMessage())
+                .isRead(false)
+                .createdAt(LocalDateTime.now())
+                .build();
         message = messageRepository.save(message);
         if (!Objects.equals(messagePostDto.getImage(), "")) {
             Map<String, Object> result = cloudinaryService.uploadFile(messagePostDto.getImage(), "MessageRoom-"+ messagePostDto.getMessageRoomId().toString()+"-"+message.getMessageId().toString(), true, true);

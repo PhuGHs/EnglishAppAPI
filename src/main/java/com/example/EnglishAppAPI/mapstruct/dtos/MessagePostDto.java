@@ -29,8 +29,6 @@ public class MessagePostDto {
     private String message;
     @JsonProperty("is_read")
     private boolean isRead = false;
-    @JsonProperty("created_at")
-    private LocalDateTime createdAt = LocalDateTime.now();
     @JsonProperty("image")
     private String image = "";
 }
