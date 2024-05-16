@@ -8,10 +8,12 @@ import com.example.EnglishAppAPI.responses.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
+
 @Component
 public interface IAccountService {
-    ResponseEntity<ApiResponse> register(RegisterDto registerDto);
-    ResponseEntity<ApiResponse> registerAdminAccount(RegisterDto registerDto);
+    ResponseEntity<ApiResponse> register(RegisterDto registerDto) throws IOException;
+    ResponseEntity<ApiResponse> registerAdminAccount(RegisterDto registerDto) throws IOException;
     ResponseEntity<ApiResponse> login(LoginDto loginDto);
     ResponseEntity<UserEntity> getCurrentUser();
     ResponseEntity<String> resetPasswordWhenLoggedIn(LoginDto loginDto);

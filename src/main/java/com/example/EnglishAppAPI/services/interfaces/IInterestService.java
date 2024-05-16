@@ -15,4 +15,5 @@ public interface IInterestService {
     ResponseEntity<ApiResponse> getPeopleWithSimilarInterests(Long userId);
     ResponseEntity<?> selectInterests(InterestPutDto interestPutDto);
     ResponseEntity<ApiResponse> getUserInterests(Long userId);
+    ResponseEntity<?> getInterests();
 }

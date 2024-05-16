@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+
 @RestController
 @RestControllerAdvice
 @RequestMapping("${api.prefix}/auth")
@@ -21,12 +23,12 @@ public class AuthController {
     private AccountService accountService;
 
     @PostMapping("/register")
-    public ResponseEntity<ApiResponse> register(@Valid @RequestBody RegisterDto registerDto) {
+    public ResponseEntity<ApiResponse> register(@Valid @RequestBody RegisterDto registerDto) throws IOException {
         return accountService.register(registerDto);
     }
 
     @PostMapping("/register-admin")
-    public ResponseEntity<ApiResponse> registerAdminAccount(@Valid @RequestBody RegisterDto registerDto) {
+    public ResponseEntity<ApiResponse> registerAdminAccount(@Valid @RequestBody RegisterDto registerDto) throws IOException {
         return accountService.registerAdminAccount(registerDto);
     }
 

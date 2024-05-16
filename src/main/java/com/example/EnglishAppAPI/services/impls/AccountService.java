@@ -12,6 +12,7 @@ import com.example.EnglishAppAPI.entities.Role;
 import com.example.EnglishAppAPI.entities.UserEntity;
 import com.example.EnglishAppAPI.exceptions.NotFoundException;
 import com.example.EnglishAppAPI.exceptions.UnauthorizedException;
+import com.example.EnglishAppAPI.mapstruct.mappers.AccountMapper;
 import com.example.EnglishAppAPI.repositories.EnglishLevelRepository;
 import com.example.EnglishAppAPI.repositories.elas.UserDocumentRepository;
 import com.example.EnglishAppAPI.responses.ApiResponse;
@@ -33,6 +34,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 
@@ -46,11 +49,13 @@ public class AccountService implements IAccountService {
     private final AuthenticationManager authenticationManager;
     private final JwtGenerator jwtGenerator;
     private final EnglishLevelRepository englishLevelRepository;
+    private final CloudinaryService cloudinaryService;
+    private final AccountMapper accountMapper;
     @Autowired
     private EmailService emailService;
 
     @Autowired
-    public AccountService(AccountRepository accountRepository, RoleRepository roleRepository, UserRepository userRepository, UserDocumentRepository userDocumentRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtGenerator jwtGenerator, EnglishLevelRepository englishLevelRepository) {
+    public AccountService(AccountRepository accountRepository, RoleRepository roleRepository, UserRepository userRepository, UserDocumentRepository userDocumentRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtGenerator jwtGenerator, EnglishLevelRepository englishLevelRepository, CloudinaryService cloudinaryService, AccountMapper accountMapper) {
         this.accountRepository = accountRepository;
         this.roleRepository = roleRepository;
         this.userRepository = userRepository;
@@ -59,10 +64,12 @@ public class AccountService implements IAccountService {
         this.authenticationManager = authenticationManager;
         this.jwtGenerator = jwtGenerator;
         this.englishLevelRepository = englishLevelRepository;
+        this.cloudinaryService = cloudinaryService;
+        this.accountMapper = accountMapper;
     }
 
     @Override
-    public ResponseEntity<ApiResponse> register(RegisterDto registerDto) {
+    public ResponseEntity<ApiResponse> register(RegisterDto registerDto) throws IOException {
         if (accountRepository.existsByEmail(registerDto.getEmail())) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse(ApiResponseStatus.FAIL, "Email is taken by other users", ""));
         }
@@ -70,22 +77,31 @@ public class AccountService implements IAccountService {
         if (!registerDto.getPassword().equals(registerDto.getConfirmedPassword())) {
             return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(new ApiResponse(ApiResponseStatus.FAIL, "Passwords are not match!!", ""));
         }
+
         UserEntity user = new UserEntity(registerDto.getFullName(), registerDto.getIsMale());
         EnglishLevel level = englishLevelRepository.findById(1L)
                 .orElseThrow(() -> new NotFoundException("english level not found"));
         user.setEnglishLevel(level);
         user = userRepository.save(user);
+        Map<String, Object> result = cloudinaryService.uploadFile("https://cdn.icon-icons.com/icons2/1378/PNG/512/avatardefault_92824.png", "user-avatar-"+ user.getUserId().toString(), true, true);
+        if (!result.containsKey("public_id")) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse(ApiResponseStatus.FAIL, "Failed to upload image" + result.get("error").toString(), ""));
+        }
+        String fileUrl = String.format("https://res.cloudinary.com/daszajz9a/image/upload/v%s/%s", result.get("version"), result.get("public_id"));
+        user.setProfilePicture(fileUrl);
+        user = userRepository.save(user);
         userDocumentRepository.save(UserDocument.fromUserEntity(user));
         Account account = new Account(registerDto.getEmail(), passwordEncoder.encode(registerDto.getPassword()));
         Role role = roleRepository.findByRoleName(Role.LEARNER).orElseThrow(() -> new NotFoundException("cannot find the role"));
         account.setRole(role);
+        account.setActive(false);
         account.setUser(user);
-        accountRepository.save(account);
-        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(ApiResponseStatus.SUCCESS, "Created account successfully!", account));
+        account = accountRepository.save(account);
+        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(ApiResponseStatus.SUCCESS, "Created account successfully!", accountMapper.toDto(account)));
     }
 
     @Override
-    public ResponseEntity<ApiResponse> registerAdminAccount(RegisterDto registerDto) {
+    public ResponseEntity<ApiResponse> registerAdminAccount(RegisterDto registerDto) throws IOException {
         if (accountRepository.existsByEmail(registerDto.getEmail())) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse(ApiResponseStatus.FAIL, "Email is taken by other users", ""));
         }
@@ -94,13 +110,19 @@ public class AccountService implements IAccountService {
             return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(new ApiResponse(ApiResponseStatus.FAIL, "Passwords are not match!!", ""));
         }
         UserEntity user = new UserEntity(registerDto.getFullName(), registerDto.getIsMale());
+        Map<String, Object> result = cloudinaryService.uploadFile("https://cdn.icon-icons.com/icons2/1378/PNG/512/avatardefault_92824.png", "user-avatar-"+ user.getUserId().toString(), true, true);
+        if (!result.containsKey("public_id")) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse(ApiResponseStatus.FAIL, "Failed to upload image" + result.get("error").toString(), ""));
+        }
+        String fileUrl = String.format("https://res.cloudinary.com/daszajz9a/image/upload/v%s/%s", result.get("version"), result.get("public_id"));
+        user.setProfilePicture(fileUrl);
         user = userRepository.save(user);
         Account account = new Account(registerDto.getEmail(), passwordEncoder.encode(registerDto.getPassword()));
         Role role = roleRepository.findByRoleName(Role.ADMIN).orElseThrow(() -> new NotFoundException("cannot find the role"));
         account.setRole(role);
         account.setUser(user);
-        accountRepository.save(account);
-        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(ApiResponseStatus.SUCCESS, "Created admin account successfully!", account));
+        account = accountRepository.save(account);
+        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(ApiResponseStatus.SUCCESS, "Created admin account successfully!", accountMapper.toDto(account)));
     }
 
     @Override
@@ -112,7 +134,7 @@ public class AccountService implements IAccountService {
             throw new NotFoundException("Account is not found");
         }
         String token = jwtGenerator.generateToken(authentication);
-        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(ApiResponseStatus.SUCCESS, "Login successfully!", new AuthResponse(token)));
+        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(ApiResponseStatus.SUCCESS, "Login successfully!", new AuthResponse(token, accountMapper.toDto(account.get()))));
     }
 
     @Override
@@ -144,7 +166,7 @@ public class AccountService implements IAccountService {
     }
 
     @Override
-    public ResponseEntity<String> resetPasswordWhenForget(LoginDto loginDto) {
+    public ResponseEntity<String>  resetPasswordWhenForget(LoginDto loginDto) {
         Account account = accountRepository.findByEmail(loginDto.getEmail())
                 .orElseThrow(() -> new NotFoundException("email is not existed"));
         account.setPassword(loginDto.getPassword());

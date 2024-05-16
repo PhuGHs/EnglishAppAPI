@@ -34,4 +34,9 @@ public class InterestController {
     public ResponseEntity<ApiResponse> getUserInterests(@PathVariable @NotNull Long userId) {
         return interestService.getUserInterests(userId);
     }
+
+    @GetMapping("/")
+    public ResponseEntity<?> getAllInterests() {
+        return interestService.getInterests();
+    }
 }

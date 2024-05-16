@@ -51,6 +51,7 @@ public class SecurityConfiguration {
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers(String.format("%s/auth/**", apiPrefix)).permitAll()
                         .requestMatchers(String.format("%s/notifications/**", apiPrefix)).permitAll()
+                        .requestMatchers(String.format("%s/openvidu/**", apiPrefix)).permitAll()
                         .anyRequest().authenticated())
                 .cors(cors -> cors
                         .configurationSource(request -> {

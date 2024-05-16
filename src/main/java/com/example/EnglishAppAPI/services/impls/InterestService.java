@@ -1,11 +1,14 @@
 package com.example.EnglishAppAPI.services.impls;
 
+import com.example.EnglishAppAPI.entities.Account;
 import com.example.EnglishAppAPI.entities.Interest;
 import com.example.EnglishAppAPI.entities.UserEntity;
 import com.example.EnglishAppAPI.exceptions.NotFoundException;
+import com.example.EnglishAppAPI.mapstruct.dtos.InterestDto;
 import com.example.EnglishAppAPI.mapstruct.dtos.InterestPostDto;
 import com.example.EnglishAppAPI.mapstruct.dtos.InterestPutDto;
 import com.example.EnglishAppAPI.mapstruct.mappers.InterestMapper;
+import com.example.EnglishAppAPI.repositories.AccountRepository;
 import com.example.EnglishAppAPI.responses.ApiResponse;
 import com.example.EnglishAppAPI.repositories.InterestRepository;
 import com.example.EnglishAppAPI.repositories.UserRepository;
@@ -17,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Service
@@ -25,6 +29,8 @@ public class InterestService implements IInterestService {
     private InterestRepository interestRepository;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private AccountRepository accountRepository;
     @Autowired
     private InterestMapper interestMapper;
     @Override
@@ -43,6 +49,8 @@ public class InterestService implements IInterestService {
     public ResponseEntity<?> selectInterests(InterestPutDto interestPutDto) {
         UserEntity user = userRepository.findById(interestPutDto.getUserId())
                 .orElseThrow(() -> new NotFoundException("user is not found"));
+        Account account = accountRepository.findByUserId(interestPutDto.userId);
+        account.setActive(true);
         Set<Long> interests = interestPutDto.getInterests();
         Set<Interest> selectedInterests = new HashSet<>();
         for (Long id: interests) {
@@ -54,6 +62,7 @@ public class InterestService implements IInterestService {
         }
         user.setInterests(selectedInterests);
         userRepository.save(user);
+        accountRepository.save(account);
         return ResponseEntity.status(HttpStatus.OK).body("selected interests");
     }
 
@@ -62,5 +71,11 @@ public class InterestService implements IInterestService {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("user is not found"));
         return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "get user interests", user.getInterests()));
+    }
+
+    @Override
+    public ResponseEntity<?> getInterests() {
+        List<Interest> interests = interestRepository.findAll();
+        return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "get all interests", interests.stream().map(interestMapper::toDto)));
     }
 }
