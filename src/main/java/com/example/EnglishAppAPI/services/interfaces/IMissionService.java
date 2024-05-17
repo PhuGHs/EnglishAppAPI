@@ -10,4 +10,5 @@ public interface IMissionService {
     ResponseEntity<?> updateMission(UserMissionPostDto userMissionDto);
     ResponseEntity<?> refreshMissions();
     ResponseEntity<?> addMissions(Long userId);
+    ResponseEntity<?> getMissionPercentage(Long userId);
 }

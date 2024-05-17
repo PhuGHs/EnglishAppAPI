@@ -39,4 +39,9 @@ public class MissionController {
     public ResponseEntity<?> addMissions(@Valid @NotNull(message = "the userId is required") @PathVariable Long userId) {
         return missionService.addMissions(userId);
     }
+
+    @GetMapping("/{userId}/get-percentage")
+    public ResponseEntity<?> getMissionPercentage(@Valid @NotNull(message = "the userId is required") @PathVariable Long userId) {
+        return missionService.getMissionPercentage(userId);
+    }
 }

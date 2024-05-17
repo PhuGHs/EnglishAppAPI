@@ -51,11 +51,12 @@ public class AccountService implements IAccountService {
     private final EnglishLevelRepository englishLevelRepository;
     private final CloudinaryService cloudinaryService;
     private final AccountMapper accountMapper;
+    private final MissionService missionService;
     @Autowired
     private EmailService emailService;
 
     @Autowired
-    public AccountService(AccountRepository accountRepository, RoleRepository roleRepository, UserRepository userRepository, UserDocumentRepository userDocumentRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtGenerator jwtGenerator, EnglishLevelRepository englishLevelRepository, CloudinaryService cloudinaryService, AccountMapper accountMapper) {
+    public AccountService(AccountRepository accountRepository, RoleRepository roleRepository, UserRepository userRepository, UserDocumentRepository userDocumentRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtGenerator jwtGenerator, EnglishLevelRepository englishLevelRepository, CloudinaryService cloudinaryService, AccountMapper accountMapper, MissionService missionService) {
         this.accountRepository = accountRepository;
         this.roleRepository = roleRepository;
         this.userRepository = userRepository;
@@ -66,6 +67,7 @@ public class AccountService implements IAccountService {
         this.englishLevelRepository = englishLevelRepository;
         this.cloudinaryService = cloudinaryService;
         this.accountMapper = accountMapper;
+        this.missionService = missionService;
     }
 
     @Override
@@ -97,6 +99,7 @@ public class AccountService implements IAccountService {
         account.setActive(false);
         account.setUser(user);
         account = accountRepository.save(account);
+        missionService.addMissions(account.getAccountId());
         return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(ApiResponseStatus.SUCCESS, "Created account successfully!", accountMapper.toDto(account)));
     }
 

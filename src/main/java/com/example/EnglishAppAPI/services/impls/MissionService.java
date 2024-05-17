@@ -131,4 +131,20 @@ public class MissionService implements IMissionService {
         userMissionRepository.save(userMission3);
         return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "add user missions", user.getMissions()));
     }
+
+    @Override
+    public ResponseEntity<?> getMissionPercentage(Long userId) {
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("user is not found"));
+        List<UserMission> userMissions = userMissionRepository.findByUser(user);
+        int count = 0;
+        if (userMissions.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(new ApiResponse(ApiResponseStatus.FAIL, "get mission percentage", "there is no missions"));
+        }
+        for (UserMission mission : userMissions) {
+            if (mission.isCompleted()) count = count + 1;
+        }
+        int percentage = count * 100 / userMissions.size();
+        return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "get mission percentage", percentage));
+    }
 }
