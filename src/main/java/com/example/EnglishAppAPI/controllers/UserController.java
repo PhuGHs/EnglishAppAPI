@@ -45,4 +45,10 @@ public class UserController {
     public ResponseEntity<?> recommendUserBasedOnEnglishLevel(@PathVariable Long userId, @RequestParam int pageNumber, @RequestParam int pageSize) {
         return searchService.recommendUsersBasedOnEnglishLevel(userId, pageNumber, pageSize);
     }
+
+    @GetMapping("/{userId}/get-user-profile")
+    @PreAuthorize("hasAuthority('LEARNER')")
+    public ResponseEntity<?> getUserProfile(@PathVariable Long userId) {
+        return userService.getUserInfo(userId);
+    }
 }

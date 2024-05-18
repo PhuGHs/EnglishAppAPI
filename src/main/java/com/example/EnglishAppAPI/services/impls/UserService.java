@@ -4,12 +4,17 @@ import com.example.EnglishAppAPI.entities.UserEntity;
 import com.example.EnglishAppAPI.exceptions.NotFoundException;
 import com.example.EnglishAppAPI.mapstruct.dtos.NotificationPostDto;
 import com.example.EnglishAppAPI.mapstruct.dtos.UserInformationDto;
+import com.example.EnglishAppAPI.mapstruct.dtos.UserProfileDto;
+import com.example.EnglishAppAPI.mapstruct.mappers.UserMapper;
 import com.example.EnglishAppAPI.responses.ApiResponse;
 import com.example.EnglishAppAPI.responses.ApiResponseStatus;
 import com.example.EnglishAppAPI.repositories.UserRepository;
 import com.example.EnglishAppAPI.services.interfaces.IUserService;
-import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -23,11 +28,13 @@ public class UserService implements IUserService {
     private final UserRepository userRepository;
     private final CloudinaryService cloudinaryService;
     private final NotificationService notificationService;
+    private final UserMapper userMapper;
     @Autowired
-    public UserService(UserRepository userRepository, CloudinaryService cloudinaryService, NotificationService notificationService) {
+    public UserService(UserRepository userRepository, CloudinaryService cloudinaryService, NotificationService notificationService, UserMapper userMapper) {
         this.userRepository = userRepository;
         this.cloudinaryService = cloudinaryService;
         this.notificationService = notificationService;
+        this.userMapper = userMapper;
     }
 
     @Override
@@ -61,7 +68,20 @@ public class UserService implements IUserService {
 
     @Override
     public ResponseEntity<ApiResponse> getUserInfo(Long id) {
-        return null;
+        UserEntity user = userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("user not found"));
+        UserProfileDto userProfileDto = UserProfileDto.builder()
+                .userId(user.getUserId())
+                .fullName(user.getFullName())
+                .gender(user.isGender())
+                .profilePicture(user.getProfilePicture())
+                .followersCount(user.getFollowersCount())
+                .followingCount(user.getFollowingCount())
+                .reviewsCount(user.getReviews_count())
+                .englishLevelName(user.getEnglishLevel().getLevelName())
+                .interests(user.getInterests())
+                .build();
+        return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "get user profile", userProfileDto));
     }
 
     @Override
@@ -83,5 +103,19 @@ public class UserService implements IUserService {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public ResponseEntity<?> getFollowers(Long currentUserId, int pageNumber, int pageSize, String sortBy) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by(sortBy));
+        Page<UserEntity> page = userRepository.getFollowers(currentUserId, pageable);
+        return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "get followers", page.map(userMapper::toNecessaryDto)));
+    }
+
+    @Override
+    public ResponseEntity<?> getFollowing(Long currentUserId, int pageNumber, int pageSize, String sortBy) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by(sortBy));
+        Page<UserEntity> page = userRepository.getFollowing(currentUserId, pageable);
+        return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "get followers", page.map(userMapper::toNecessaryDto)));
     }
 }

@@ -25,4 +25,16 @@ public class FollowerController {
     public ResponseEntity<ApiResponse> unfollowUser(@PathVariable Long currentUserId, @PathVariable Long userIdToUnfollow) {
         return userService.unfollowUsers(currentUserId, userIdToUnfollow);
     }
+
+    @GetMapping("/{currentUserId}/get-followers")
+    @PreAuthorize("hasAuthority('LEARNER')")
+    public ResponseEntity<?> getFollowers(@PathVariable Long currentUserId, @RequestParam(defaultValue = "0") int pageNumber, @RequestParam(defaultValue = "10") int pageSize, @RequestParam(defaultValue = "fullName") String sortBy) {
+        return userService.getFollowers(currentUserId, pageNumber, pageSize, sortBy);
+    }
+
+    @GetMapping("/{currentUserId}/get-following")
+    @PreAuthorize("hasAuthority('LEARNER')")
+    public ResponseEntity<?> getFollowing(@PathVariable Long currentUserId, @RequestParam(defaultValue = "0") int pageNumber, @RequestParam(defaultValue = "10") int pageSize, @RequestParam(defaultValue = "fullName") String sortBy) {
+        return userService.getFollowing(currentUserId, pageNumber, pageSize, sortBy);
+    }
 }

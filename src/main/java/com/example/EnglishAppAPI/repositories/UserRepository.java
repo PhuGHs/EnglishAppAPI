@@ -15,4 +15,8 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     boolean existsById(Long aLong);
     @Query("SELECT u FROM UserEntity u JOIN u.followers f WHERE u.englishLevel = :englishLevel GROUP BY u ORDER BY COUNT(f) DESC")
     Page<UserEntity> findUsersByEnglishLevelAndSortByFollowersCountDesc(@Param("englishLevel")EnglishLevel englishLevel, Pageable pageable);
+    @Query("SELECT u.followers from UserEntity u WHERE u.userId = :currentUserId")
+    Page<UserEntity> getFollowers(@Param("currentUserId") Long currentUserId, Pageable pageable);
+    @Query("SELECT u.following from UserEntity u WHERE u.userId = :currentUserId")
+    Page<UserEntity> getFollowing(@Param("currentUserId") Long currentUserId, Pageable pageable);
 }

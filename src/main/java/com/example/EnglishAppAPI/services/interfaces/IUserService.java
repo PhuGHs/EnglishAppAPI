@@ -11,4 +11,6 @@ public interface IUserService {
     ResponseEntity<ApiResponse> unfollowUsers(Long currentUserId, Long id);
     ResponseEntity<ApiResponse> getUserInfo(Long id);
     ResponseEntity<?> changeUserInformation(Long currentUserId, UserInformationDto userInformationDto);
+    ResponseEntity<?> getFollowers(Long currentUserId, int pageNumber, int pageSize, String sortBy);
+    ResponseEntity<?> getFollowing(Long currentUserId, int pageNumber, int pageSize, String sortBy);
 }

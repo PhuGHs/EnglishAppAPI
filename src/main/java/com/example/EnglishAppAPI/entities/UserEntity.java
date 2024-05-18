@@ -39,6 +39,12 @@ public class UserEntity {
     @Column(name = "followers_count")
     private int followersCount = 0;
 
+    @Column(name = "reviews_count")
+    private int reviews_count = 0;
+
+    @Column(name = "star")
+    private float star = 0;
+
     @Column(name = "is_banned")
     private boolean isBanned = false;
 

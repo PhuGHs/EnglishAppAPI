@@ -56,7 +56,6 @@ public class MissionService implements IMissionService {
             return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body("this mission was done");
         } else {
             userMission.setCompletionCount(userMission.getCompletionCount() + 1);
-            userMissionRepository.save(userMission);
             String leaderBoardWeekKey = LeaderboardService.generateLeaderboardKey(LeaderboardTimePeriod.week);
             String leaderBoardMonthKey = LeaderboardService.generateLeaderboardKey(LeaderboardTimePeriod.month);
             String leaderBoardYearKey = LeaderboardService.generateLeaderboardKey(LeaderboardTimePeriod.year);
@@ -66,6 +65,7 @@ public class MissionService implements IMissionService {
             if (userMission.getCompletionCount() == mission.getMaxCompletionCount()) {
                 userMission.setCompleted(true);
             }
+            userMissionRepository.save(userMission);
         }
         return ResponseEntity.ok("updated successfully");
     }
