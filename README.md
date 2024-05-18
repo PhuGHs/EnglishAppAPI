@@ -42,4 +42,4 @@ Then, clone the repository `https://github.com/PhuGHs/EnglishAppAPI.git`
 Finally, just run the project
 
 ## Techstack
-Here is what I used in the project: Elasticsearch, Redis, Spring Boot, Docker, Websocket
+Here is what I used in the project: `Elasticsearch`, `Redis`, `Spring Boot`, `Docker`, `Websocket`
