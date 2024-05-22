@@ -1,9 +1,12 @@
 package com.example.EnglishAppAPI.entities;
 
+import com.example.EnglishAppAPI.mapstruct.serializers.CustomDateSerializer;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @Entity
 @Table(name = "reviews")
@@ -28,5 +31,6 @@ public class Review {
     @Column(name = "comment")
     private String comment;
     @Column(name = "created_at")
-    private LocalDateTime createdAt;
+    @JsonSerialize(using = CustomDateSerializer.class)
+    private Date createdAt = new Date();
 }

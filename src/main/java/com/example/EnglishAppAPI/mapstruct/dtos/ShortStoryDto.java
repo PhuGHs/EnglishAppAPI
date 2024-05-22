@@ -1,6 +1,8 @@
 package com.example.EnglishAppAPI.mapstruct.dtos;
 
+import com.example.EnglishAppAPI.mapstruct.serializers.CustomDateSerializer;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -8,6 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @Getter
 @Setter
@@ -25,5 +28,6 @@ public class ShortStoryDto {
     @JsonProperty("image")
     private String image;
     @JsonProperty("created_date")
-    private LocalDateTime createdDate;
+    @JsonSerialize(using = CustomDateSerializer.class)
+    private Date createdDate;
 }

@@ -1,5 +1,7 @@
 package com.example.EnglishAppAPI.entities;
 
+import com.example.EnglishAppAPI.mapstruct.serializers.CustomDateSerializer;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.cglib.core.Local;
@@ -27,12 +29,12 @@ public class LearningRoom {
     private String roomName;
 
     @Column(name = "created_at", nullable = false)
-    @Temporal(TemporalType.TIMESTAMP)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @JsonSerialize(using = CustomDateSerializer.class)
+    private Date createdAt = new Date();
 
     @Column(name = "scheduled_to", nullable = true)
-    @Temporal(TemporalType.TIMESTAMP)
-    private LocalDateTime scheduledTo;
+    @JsonSerialize(using = CustomDateSerializer.class)
+    private Date scheduledTo;
 
     @Column(name = "duration")
     private int duration;

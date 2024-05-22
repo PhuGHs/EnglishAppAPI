@@ -1,6 +1,8 @@
 package com.example.EnglishAppAPI.mapstruct.dtos;
 
+import com.example.EnglishAppAPI.mapstruct.serializers.CustomDateSerializer;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -11,6 +13,7 @@ import lombok.Setter;
 import org.hibernate.validator.constraints.Range;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -21,7 +24,8 @@ public class LearningRoomPostInstantDto {
     @NotEmpty(message = "room name is required")
     private String roomName;
     @JsonProperty("created_at")
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @JsonSerialize(using = CustomDateSerializer.class)
+    private Date createdAt = new Date();
     @JsonProperty("max_participants")
     @NotNull(message = "max participants is required")
     private int maxParticipants;

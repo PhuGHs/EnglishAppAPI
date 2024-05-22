@@ -42,7 +42,7 @@ public class ReviewService implements IReviewService {
         Review review = reviewMapper.toEntity(reviewPostDto);
         UserEntity user = review.getUserWhoWasReviewed();
         review = reviewRepository.save(review);
-        NotificationDto notificationDto = notificationService.addNotification(new NotificationPostDto(reviewPostDto.getUserWhoReviewedId(), reviewPostDto.getUserWhoWasReviewedId(), "a user had reviewed you on your profile", false, LocalDateTime.now(), review.getReviewId(), review.getReviewId()));
+        NotificationDto notificationDto = notificationService.addNotification(new NotificationPostDto(reviewPostDto.getUserWhoReviewedId(), reviewPostDto.getUserWhoWasReviewedId(), "a user had reviewed you on your profile", false, review.getReviewId(), review.getReviewId()));
         simpMessagingTemplate.convertAndSend("/user/" + notificationDto.getReceiver().getUserId(), notificationDto);
         return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "review learner", reviewMapper.toDto(review)));
     }

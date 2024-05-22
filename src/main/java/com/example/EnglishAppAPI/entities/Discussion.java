@@ -1,5 +1,7 @@
 package com.example.EnglishAppAPI.entities;
 
+import com.example.EnglishAppAPI.mapstruct.serializers.CustomDateSerializer;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.cglib.core.Local;
@@ -27,12 +29,12 @@ public class Discussion {
     private int numberOfAnswers = 0;
 
     @Column(name = "created_date")
-    @Temporal(TemporalType.TIMESTAMP)
-    private LocalDateTime createdDate = LocalDateTime.now();
+    @JsonSerialize(using = CustomDateSerializer.class)
+    private Date createdDate = new Date();
 
     @Column(name = "updated_date")
-    @Temporal(TemporalType.TIMESTAMP)
-    private LocalDateTime updatedDate = LocalDateTime.now();
+    @JsonSerialize(using = CustomDateSerializer.class)
+    private Date updatedDate = new Date();
 
     @ManyToOne
     @JoinColumn(name = "user_id")

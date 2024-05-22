@@ -104,10 +104,21 @@ public class MissionService implements IMissionService {
             && !missionRepository.existsByMissionName(mission2.getMissionName())
             && !missionRepository.existsByMissionName(mission3.getMissionName())
         ) {
-            missionRepository.save(mission);
-            missionRepository.save(mission1);
-            missionRepository.save(mission2);
-            missionRepository.save(mission3);
+            mission = missionRepository.save(mission);
+            mission1 = missionRepository.save(mission1);
+            mission2 = missionRepository.save(mission2);
+            mission3 = missionRepository.save(mission3);
+        }
+
+        if (mission.getMissionId() == null) {
+            mission = missionRepository.findById(1L)
+                    .orElse(null);
+            mission1 = missionRepository.findById(2L)
+                    .orElse(null);
+            mission2 = missionRepository.findById(3L)
+                    .orElse(null);
+            mission3 = missionRepository.findById(4L)
+                    .orElse(null);
         }
         UserMission userMission = UserMission.builder()
                 .user(user)

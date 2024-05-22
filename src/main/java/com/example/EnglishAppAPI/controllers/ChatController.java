@@ -55,7 +55,7 @@ public class ChatController {
         return chatService.getParticipants(roomId);
     }
 
-    @PutMapping("/rooms/messages/{messageId}mark-as-read")
+    @PutMapping("/rooms/messages/{messageId}/mark-as-read")
     @PreAuthorize("hasAuthority('LEARNER')")
     public ResponseEntity<?> markAsRead(@NotNull(message = "the messageId is required") @Valid @PathVariable Long messageId) {
         return chatService.markAsRead(messageId);

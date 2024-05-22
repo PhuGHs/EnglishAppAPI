@@ -1,5 +1,7 @@
 package com.example.EnglishAppAPI.entities;
 
+import com.example.EnglishAppAPI.mapstruct.serializers.CustomDateSerializer;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -30,10 +32,11 @@ public class Answer {
     @Column(name = "answer_text", nullable = false)
     private String answerText;
 
-    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_at")
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @JsonSerialize(using = CustomDateSerializer.class)
+    private Date createdAt = new Date();
 
     @Column(name = "updated_at")
-    private LocalDateTime updatedAt = LocalDateTime.now();
+    @JsonSerialize(using = CustomDateSerializer.class)
+    private Date updatedAt = new Date();
 }

@@ -1,5 +1,7 @@
 package com.example.EnglishAppAPI.entities;
 
+import com.example.EnglishAppAPI.mapstruct.serializers.CustomDateSerializer;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.*;
@@ -40,8 +42,8 @@ public class Message {
     private boolean isRead;
 
     @Column(name = "created_at")
-    @Temporal(TemporalType.TIMESTAMP)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @JsonSerialize(using = CustomDateSerializer.class)
+    private Date createdAt = new Date();
 
     @Column(name = "image")
     @Nullable

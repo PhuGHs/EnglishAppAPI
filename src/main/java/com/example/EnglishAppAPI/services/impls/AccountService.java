@@ -99,7 +99,7 @@ public class AccountService implements IAccountService {
         account.setActive(false);
         account.setUser(user);
         account = accountRepository.save(account);
-        missionService.addMissions(account.getAccountId());
+        missionService.addMissions(user.getUserId());
         return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(ApiResponseStatus.SUCCESS, "Created account successfully!", accountMapper.toDto(account)));
     }
 
@@ -113,6 +113,7 @@ public class AccountService implements IAccountService {
             return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(new ApiResponse(ApiResponseStatus.FAIL, "Passwords are not match!!", ""));
         }
         UserEntity user = new UserEntity(registerDto.getFullName(), registerDto.getIsMale());
+        user = userRepository.save(user);
         Map<String, Object> result = cloudinaryService.uploadFile("https://cdn.icon-icons.com/icons2/1378/PNG/512/avatardefault_92824.png", "user-avatar-"+ user.getUserId().toString(), true, true);
         if (!result.containsKey("public_id")) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse(ApiResponseStatus.FAIL, "Failed to upload image" + result.get("error").toString(), ""));

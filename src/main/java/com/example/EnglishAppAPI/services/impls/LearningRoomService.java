@@ -59,7 +59,7 @@ public class LearningRoomService implements ILearningRoomService {
         EnglishTopic topic = englishTopicRepository.findById(learningRoomPostDto.getEnglishTopicId())
                 .orElseThrow(() -> new NotFoundException("Topic not found"));
         LearningRoom learningRoom = LearningRoom.builder()
-                .createdAt(LocalDateTime.now())
+                .createdAt(new Date())
                 .scheduledTo(null)
                 .roomName(learningRoomPostDto.getRoomName())
                 .maxParticipants(learningRoomPostDto.getMaxParticipants())
@@ -73,7 +73,7 @@ public class LearningRoomService implements ILearningRoomService {
         Participant ownerParticipant = Participant.builder()
                 .room(learningRoom)
                 .user(owner)
-                .joinTime(LocalDateTime.now())
+                .joinTime(new Date())
                 .isOwner(true)
                 .isSpeaker(true)
                 .build();
@@ -93,7 +93,7 @@ public class LearningRoomService implements ILearningRoomService {
                 .orElseThrow(() -> new NotFoundException("Topic not found"));
 
         LearningRoom learningRoom = LearningRoom.builder()
-                .createdAt(LocalDateTime.now())
+                .createdAt(new Date())
                 .scheduledTo(learningRoomPostLaterDto.getScheduledTo())
                 .roomName(learningRoomPostLaterDto.getRoomName())
                 .duration(learningRoomPostLaterDto.getDuration())
@@ -107,15 +107,15 @@ public class LearningRoomService implements ILearningRoomService {
         Participant ownerParticipant = Participant.builder()
                 .room(learningRoom)
                 .user(owner)
-                .joinTime(LocalDateTime.now())
+                .joinTime(new Date())
                 .isOwner(true)
                 .isSpeaker(true)
                 .build();
         Set<Participant> ps = new HashSet<>();
         ps.add(ownerParticipant);
         learningRoom.setParticipants(ps);
-        LocalDateTime scheduledTo = learningRoomPostLaterDto.getScheduledTo();
-        Instant scheduledInstant = scheduledTo.atZone(ZoneId.systemDefault()).toInstant();
+        Date scheduledTo = learningRoomPostLaterDto.getScheduledTo();
+        Instant scheduledInstant = scheduledTo.toInstant();
         taskScheduler.schedule(this::sendMessageWhenItComes, scheduledInstant);
         learningRoom = learningRoomRepository.save(learningRoom);
 
@@ -142,7 +142,7 @@ public class LearningRoomService implements ILearningRoomService {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ApiResponse(ApiResponseStatus.FAIL, "your level is not suitable for this room", "level"));
             }
             Participant participant = Participant.builder()
-                    .joinTime(LocalDateTime.now())
+                    .joinTime(new Date())
                     .room(learningRoom)
                     .user(user)
                     .isSpeaker(false)

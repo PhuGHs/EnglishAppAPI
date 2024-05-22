@@ -1,9 +1,12 @@
 package com.example.EnglishAppAPI.entities;
 
+import com.example.EnglishAppAPI.mapstruct.serializers.CustomDateSerializer;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @Entity
 @Table(name = "short_stories")
@@ -26,6 +29,6 @@ public class ShortStory {
     @Column(name = "image")
     private String image;
     @Column(name = "created_date")
-    @Temporal(TemporalType.TIMESTAMP)
-    private LocalDateTime createdDate = LocalDateTime.now();
+    @JsonSerialize(using = CustomDateSerializer.class)
+    private Date createdDate = new Date();
 }

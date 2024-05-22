@@ -1,11 +1,14 @@
 package com.example.EnglishAppAPI.mapstruct.dtos;
 
+import com.example.EnglishAppAPI.mapstruct.serializers.CustomDateSerializer;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.Set;
 
 @AllArgsConstructor
@@ -18,9 +21,11 @@ public class LearningRoomDto {
     @JsonProperty("room_name")
     private String roomName;
     @JsonProperty("created_at")
-    private LocalDateTime createdAt;
+    @JsonSerialize(using = CustomDateSerializer.class)
+    private Date createdAt;
     @JsonProperty("scheduled_to")
-    private LocalDateTime scheduledTo;
+    @JsonSerialize(using = CustomDateSerializer.class)
+    private Date scheduledTo;
     @JsonProperty("max_participants")
     private int maxParticipants;
     @JsonProperty("duration")

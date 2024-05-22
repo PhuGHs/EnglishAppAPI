@@ -5,6 +5,7 @@ import com.example.EnglishAppAPI.entities.MessageRoom;
 import com.example.EnglishAppAPI.entities.UserEntity;
 import com.example.EnglishAppAPI.exceptions.NotFoundException;
 import com.example.EnglishAppAPI.mapstruct.dtos.ConversationPostDto;
+import com.example.EnglishAppAPI.mapstruct.dtos.MessageDto;
 import com.example.EnglishAppAPI.mapstruct.dtos.MessagePostDto;
 import com.example.EnglishAppAPI.mapstruct.mappers.MessageMapper;
 import com.example.EnglishAppAPI.mapstruct.mappers.MessageRoomMapper;
@@ -99,7 +100,7 @@ public class ChatService implements IChatService {
                 .receiver(receiver)
                 .message(messagePostDto.getMessage())
                 .isRead(false)
-                .createdAt(LocalDateTime.now())
+                .createdAt(new Date())
                 .build();
         message = messageRepository.save(message);
         if (!Objects.equals(messagePostDto.getImage(), "")) {
@@ -114,8 +115,19 @@ public class ChatService implements IChatService {
         messageRoom.setLastSentMessage(message);
         messageRoom.setLastSentUser(message.getSender());
         messageRoomRepository.save(messageRoom);
-        simpMessagingTemplate.convertAndSend("/chatroom/" + messagePostDto.getMessageRoomId(), messageMapper.toDto(message));
-        return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "send message", messageMapper.toDto(message)));
+
+        MessageDto messageDto = MessageDto.builder()
+                .messageRoomId(messageRoom.getMessageRoomId())
+                .messageId(message.getMessageId())
+                .sender(userMapper.toNecessaryDto(sender))
+                .receiver(userMapper.toNecessaryDto(receiver))
+                .image(message.getImage())
+                .message(message.getMessage())
+                .isRead(message.isRead())
+                .createdAt(message.getCreatedAt())
+                .build();
+        simpMessagingTemplate.convertAndSend("/chatroom/" + messagePostDto.getMessageRoomId(), messageDto);
+        return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "send message", messageDto));
     }
 
     @Override

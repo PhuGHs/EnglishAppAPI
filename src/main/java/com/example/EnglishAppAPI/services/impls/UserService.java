@@ -48,7 +48,7 @@ public class UserService implements IUserService {
         followedUser.getFollowing().add(user);
         userRepository.save(user);
         userRepository.save(followedUser);
-        notificationService.addNotification(new NotificationPostDto(currentUserId, id, user.getFullName() + "is following you now", false, LocalDateTime.now(), currentUserId, currentUserId));
+        notificationService.addNotification(new NotificationPostDto(currentUserId, id, user.getFullName() + "is following you now", false, currentUserId, currentUserId));
         return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(ApiResponseStatus.SUCCESS, "follow user", ""));
     }
 

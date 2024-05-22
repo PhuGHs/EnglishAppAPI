@@ -1,5 +1,7 @@
 package com.example.EnglishAppAPI.entities;
 
+import com.example.EnglishAppAPI.mapstruct.serializers.CustomDateSerializer;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.cglib.core.Local;
@@ -45,12 +47,12 @@ public class Account {
     private String verificationCode = "";
 
     @Column(name = "created_at")
-    @Temporal(TemporalType.TIMESTAMP)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @JsonSerialize(using = CustomDateSerializer.class)
+    private Date createdAt = new Date();
 
     @Column(name = "updated_at")
-    @Temporal(TemporalType.TIMESTAMP)
-    private LocalDateTime updatedAt = LocalDateTime.now();
+    @JsonSerialize(using = CustomDateSerializer.class)
+    private Date updatedAt = new Date();
 
     @Column(name = "is_active")
     private boolean isActive = true;

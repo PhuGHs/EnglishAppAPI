@@ -1,6 +1,8 @@
 package com.example.EnglishAppAPI.mapstruct.dtos;
 
+import com.example.EnglishAppAPI.mapstruct.serializers.CustomDateSerializer;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -9,6 +11,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -28,5 +31,6 @@ public class ReportDto {
     @JsonProperty("is_solved")
     private boolean isSolved;
     @JsonProperty("created_date")
-    private LocalDateTime createdDate;
+    @JsonSerialize(using = CustomDateSerializer.class)
+    private Date createdDate;
 }

@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -50,7 +51,7 @@ public class ReportService implements IReportService {
                 .content(reportDto.getContent())
                 .reported(reported)
                 .reporter(user)
-                .createdDate(LocalDateTime.now())
+                .createdDate(new Date())
                 .build();
         Report report1 = reportRepository.save(report);
         try {

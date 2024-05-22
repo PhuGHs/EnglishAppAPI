@@ -1,6 +1,8 @@
 package com.example.EnglishAppAPI.mapstruct.dtos;
 
+import com.example.EnglishAppAPI.mapstruct.serializers.CustomDateSerializer;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,7 +27,8 @@ public class NotificationDto {
     @JsonProperty("is_read")
     private boolean isRead;
     @JsonProperty("created_at")
-    private LocalDateTime createdAt;
+    @JsonSerialize(using = CustomDateSerializer.class)
+    private Date createdAt;
     @JsonProperty("created_item_id")
     private Long createdItemId;
     @JsonProperty("entity_item_id")

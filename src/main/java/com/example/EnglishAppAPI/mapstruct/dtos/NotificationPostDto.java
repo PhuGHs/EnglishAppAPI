@@ -21,8 +21,6 @@ public class NotificationPostDto {
     private String message;
     @JsonProperty("is_read")
     private boolean isRead = false;
-    @JsonProperty("created_at")
-    private LocalDateTime createdAt = LocalDateTime.now();
     @JsonProperty("created_item_id")
     private Long createdItemId;
     @JsonProperty("entity_item_id")

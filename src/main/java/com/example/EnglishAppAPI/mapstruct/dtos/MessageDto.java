@@ -1,19 +1,20 @@
 package com.example.EnglishAppAPI.mapstruct.dtos;
 
+import com.example.EnglishAppAPI.mapstruct.serializers.CustomDateSerializer;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import jakarta.annotation.Nullable;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
+@Builder
 public class MessageDto {
     @JsonProperty("message_id")
     private Long messageId;
@@ -28,7 +29,8 @@ public class MessageDto {
     @JsonProperty("is_read")
     private boolean isRead;
     @JsonProperty("created_at")
-    private LocalDateTime createdAt;
+    @JsonSerialize(using = CustomDateSerializer.class)
+    private Date createdAt;
     @JsonProperty("image")
     private String image;
 }

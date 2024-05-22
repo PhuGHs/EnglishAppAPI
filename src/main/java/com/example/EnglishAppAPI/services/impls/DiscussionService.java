@@ -25,6 +25,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 
@@ -67,8 +68,8 @@ public class DiscussionService implements IDiscussionService {
 
         Discussion discussion = Discussion.builder()
                 .title(request.getTitle())
-                .createdDate(LocalDateTime.now())
-                .updatedDate(LocalDateTime.now())
+                .createdDate(new Date())
+                .updatedDate(new Date())
                 .user(user)
                 .topic(topic)
                 .answers(new HashSet<>())

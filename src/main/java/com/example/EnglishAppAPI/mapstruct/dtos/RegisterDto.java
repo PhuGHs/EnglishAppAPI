@@ -3,13 +3,16 @@ package com.example.EnglishAppAPI.mapstruct.dtos;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
-import lombok.Data;
+import lombok.*;
 import org.antlr.v4.runtime.misc.NotNull;
 import org.hibernate.validator.constraints.Length;
 
 import java.io.Serializable;
 
-@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
 public class RegisterDto implements Serializable {
     @Email(message = "Provided email is invalid")
     @NotEmpty(message = "Email cannot be empty")

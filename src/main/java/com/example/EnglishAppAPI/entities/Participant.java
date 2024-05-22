@@ -1,5 +1,7 @@
 package com.example.EnglishAppAPI.entities;
 
+import com.example.EnglishAppAPI.mapstruct.serializers.CustomDateSerializer;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,7 +22,8 @@ public class Participant {
     private Long id;
 
     @Column(name = "join_time")
-    private LocalDateTime joinTime;
+    @JsonSerialize(using = CustomDateSerializer.class)
+    private Date joinTime = new Date();
 
     @Column(name = "is_speaker")
     private boolean isSpeaker;

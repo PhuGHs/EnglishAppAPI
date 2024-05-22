@@ -28,6 +28,4 @@ public class ReviewPostDto {
     @JsonProperty("comment")
     @NotEmpty(message = "the comment field is required")
     private String comment;
-    @JsonProperty("created_at")
-    private LocalDateTime createdAt = LocalDateTime.now();
 }

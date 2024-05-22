@@ -27,6 +27,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @Service
 public class AnswerService implements IAnswerService {
@@ -71,13 +72,13 @@ public class AnswerService implements IAnswerService {
                 .discussion(discussion)
                 .user(user)
                 .answerText(answerDto.getAnswerText())
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
+                .createdAt(new Date())
+                .updatedAt(new Date())
                 .build();
 
         Answer answer1 = answerRepository.save(answer);
         AnswerDto answerGetDto = mapper.toDto(answer1);
-        NotificationDto notification = notificationService.addNotification(new NotificationPostDto(answerDto.getUserId(), discussion.getUser().getUserId(), user.getFullName() + "commented on your discussion", false, LocalDateTime.now(), answer1.getAnswerId(), discussion.getId()));
+        NotificationDto notification = notificationService.addNotification(new NotificationPostDto(answerDto.getUserId(), discussion.getUser().getUserId(), user.getFullName() + "commented on your discussion", false, answer1.getAnswerId(), discussion.getId()));
         simpMessagingTemplate.convertAndSend("/user/"+ notification.getReceiver().getUserId(), notification);
         return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(ApiResponseStatus.SUCCESS, "Answered the discussion successfully", answerGetDto));
     }
@@ -93,7 +94,7 @@ public class AnswerService implements IAnswerService {
         Answer answer = answerRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("answer is not found"));
         answer.setAnswerText(answer.getAnswerText());
-        answer.setUpdatedAt(LocalDateTime.now());
+        answer.setUpdatedAt(new Date());
         AnswerDto answerGetDto = mapper.toDto(answer);
         return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(ApiResponseStatus.SUCCESS, "Edited the answer successfully", answerGetDto));
     }
