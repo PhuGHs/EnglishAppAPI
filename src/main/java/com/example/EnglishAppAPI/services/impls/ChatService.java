@@ -74,7 +74,7 @@ public class ChatService implements IChatService {
     public ResponseEntity<?> getAllConversations(Long userId) {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("user not found"));
-        List<MessageRoom> messageRooms = messageRoomRepository.findByUsersContains(user);
+        List<MessageRoom> messageRooms = messageRoomRepository.findByUsersContains(user.getUserId());
         return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "get all user conversations", messageRooms.stream().map(messageRoomMapper::toDto)));
     }
 
@@ -82,7 +82,7 @@ public class ChatService implements IChatService {
     public ResponseEntity<?> getAllMessages(Long conversationId) {
         MessageRoom messageRoom = messageRoomRepository.findById(conversationId)
                 .orElseThrow(() -> new NotFoundException("message room is not found"));
-        List<Message> messages = messageRepository.findByMessageRoom(messageRoom);
+        List<Message> messages = messageRepository.findByMessageRoom(conversationId);
         return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "get all messages", messages.stream().map(messageMapper::toDto)));
     }
 
@@ -114,7 +114,7 @@ public class ChatService implements IChatService {
         message = messageRepository.save(message);
         messageRoom.setLastSentMessage(message);
         messageRoom.setLastSentUser(message.getSender());
-        messageRoomRepository.save(messageRoom);
+        messageRoom = messageRoomRepository.save(messageRoom);
 
         MessageDto messageDto = MessageDto.builder()
                 .messageRoomId(messageRoom.getMessageRoomId())
@@ -126,7 +126,9 @@ public class ChatService implements IChatService {
                 .isRead(message.isRead())
                 .createdAt(message.getCreatedAt())
                 .build();
-        simpMessagingTemplate.convertAndSend("/chatroom/" + messagePostDto.getMessageRoomId(), messageDto);
+        simpMessagingTemplate.convertAndSend("/topic/chatroom/" + messagePostDto.getMessageRoomId(), messageDto);
+        simpMessagingTemplate.convertAndSend("/topic/chatroom-out/" + messageDto.getReceiver().getUserId(), messageRoomMapper.toDto(messageRoom));
+        simpMessagingTemplate.convertAndSend("/topic/chatroom-out/" + messageDto.getSender().getUserId(), messageRoomMapper.toDto(messageRoom));
         return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "send message", messageDto));
     }
 

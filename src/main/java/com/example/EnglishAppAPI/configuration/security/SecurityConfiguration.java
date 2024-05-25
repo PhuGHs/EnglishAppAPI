@@ -48,6 +48,7 @@ public class SecurityConfiguration {
                 .exceptionHandling(eh -> eh.authenticationEntryPoint(jwtAuthEntryPoint).accessDeniedHandler(customAccessDeniedHandler))
                 .authorizeHttpRequests(req -> req
                         .requestMatchers("/swagger/**").permitAll()
+                        .requestMatchers("/ws/**").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers(String.format("%s/auth/**", apiPrefix)).permitAll()
                         .requestMatchers(String.format("%s/notifications/**", apiPrefix)).permitAll()

@@ -17,7 +17,7 @@ public class CustomDateSerializer extends StdSerializer<Date> {
         this(null);
     }
 
-    private SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss");
+    private SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
 
 
     @Override
