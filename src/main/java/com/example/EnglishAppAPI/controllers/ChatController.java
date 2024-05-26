@@ -33,6 +33,12 @@ public class ChatController {
         return chatService.sendMessage(messagePostDto);
     }
 
+    @PostMapping("/check-if-exist")
+    @PreAuthorize("hasAuthority('LEARNER')")
+    public ResponseEntity<?> checkIfExist(@Valid @RequestBody ConversationPostDto conversationPostDto) {
+        return chatService.checkIfRoomExists(conversationPostDto);
+    }
+
     @PostMapping("/create-room")
     @PreAuthorize("hasAuthority('LEARNER')")
     public ResponseEntity<?> createRoom(@Valid @RequestBody ConversationPostDto conversationPostDto) {

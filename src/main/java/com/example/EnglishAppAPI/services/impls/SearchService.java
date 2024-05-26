@@ -17,6 +17,9 @@ import com.example.EnglishAppAPI.responses.ApiResponse;
 import com.example.EnglishAppAPI.responses.ApiResponseStatus;
 import com.example.EnglishAppAPI.services.interfaces.ISearchService;
 import com.example.EnglishAppAPI.utils.ElasticsearchUtils;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -47,9 +50,13 @@ public class SearchService implements ISearchService {
     private final UserMapper userMapper;
 
     @Override
-    public ResponseEntity<?> fuzzySearchUserFullName(String userName) throws IOException {
+    public ResponseEntity<?> fuzzySearchUserFullName(String userName, Long currentUserId) throws IOException {
         Supplier<Query> supplier = ElasticsearchUtils.createSupplier(userName, "fullName");
-        SearchResponse<UserDocument> response = elasticsearchClient.search(s->s.index(USER_INDEX).query(supplier.get()), UserDocument.class);
+        Supplier<Query> exclusionQuerySupplier = ElasticsearchUtils.createExclusionQuery(currentUserId, "id");
+        Supplier<Query> combinedQuerySupplier = () -> Query.of(q ->
+                q.bool(b -> b.mustNot(exclusionQuerySupplier.get()).must(supplier.get()))
+        );
+        SearchResponse<UserDocument> response = elasticsearchClient.search(s->s.index(USER_INDEX).query(combinedQuerySupplier.get()), UserDocument.class);
         List<Hit<UserDocument>> hits = response.hits().hits();
         return ResponseEntity.ok(hits.stream().map(Hit::source));
     }

@@ -16,8 +16,4 @@ public class UserInformationDto {
     private String profilePicture;
     @JsonProperty("full_name")
     private String fullName;
-    @JsonProperty("gender")
-    private boolean gender;
-    @JsonProperty("quote")
-    private String quote;
 }

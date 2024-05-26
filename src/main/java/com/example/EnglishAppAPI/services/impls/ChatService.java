@@ -147,4 +147,32 @@ public class ChatService implements IChatService {
         messageRepository.save(message);
         return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "mark as read", messageMapper.toDto(message)));
     }
+
+    @Override
+    public ResponseEntity<?> checkIfRoomExists(ConversationPostDto conversationPostDto) {
+        Long senderId = conversationPostDto.getSenderId();
+        Long receiverId = conversationPostDto.getReceiverId();
+        Optional<MessageRoom> opMessageRoom = messageRoomRepository.findRoomByUsers(senderId, receiverId);
+        if (opMessageRoom.isEmpty()) {
+            UserEntity sender = userRepository.findById(senderId)
+                    .orElse(null);
+            if (sender == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("cannot find the sender");
+            }
+            UserEntity receiver = userRepository.findById(receiverId)
+                    .orElse(null);
+            if (receiver == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("cannot find the receiver");
+            }
+            MessageRoom messageRoom = new MessageRoom();
+            messageRoom.setRoomName("");
+            Set<UserEntity> users = new HashSet<>();
+            users.add(sender);
+            users.add(receiver);
+            messageRoom.setUsers(users);
+            messageRoom = messageRoomRepository.save(messageRoom);
+            return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "check and created new room", messageRoomMapper.toDto(messageRoom)));
+        }
+        return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "check and get room", messageRoomMapper.toDto(opMessageRoom.get())));
+    }
 }

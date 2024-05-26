@@ -17,4 +17,5 @@ public interface IChatService {
     ResponseEntity<?> sendMessage(MessagePostDto messagePostDto) throws IOException;
     ResponseEntity<?> getParticipants(Long conversationId);
     ResponseEntity<?> markAsRead(Long messageId);
+    ResponseEntity<?> checkIfRoomExists(ConversationPostDto conversationPostDto);
 }

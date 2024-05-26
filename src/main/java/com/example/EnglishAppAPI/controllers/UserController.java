@@ -24,8 +24,8 @@ public class UserController {
     }
 
     @GetMapping("/find-by-fullName")
-    public ResponseEntity<?> findByFullName(@RequestParam String fullName) throws IOException {
-        return searchService.fuzzySearchUserFullName(fullName);
+    public ResponseEntity<?> findByFullName(@RequestParam String fullName, @RequestParam Long currentUserId) throws IOException {
+        return searchService.fuzzySearchUserFullName(fullName, currentUserId);
     }
 
     @PutMapping("/{userId}/change-info")
