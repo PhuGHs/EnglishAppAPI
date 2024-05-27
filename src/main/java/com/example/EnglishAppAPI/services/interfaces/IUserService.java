@@ -13,4 +13,5 @@ public interface IUserService {
     ResponseEntity<?> changeUserInformation(Long currentUserId, UserInformationDto userInformationDto);
     ResponseEntity<?> getFollowers(Long currentUserId, int pageNumber, int pageSize, String sortBy);
     ResponseEntity<?> getFollowing(Long currentUserId, int pageNumber, int pageSize, String sortBy);
+    ResponseEntity<?> checkIfExist(Long currentUserId, Long id);
 }

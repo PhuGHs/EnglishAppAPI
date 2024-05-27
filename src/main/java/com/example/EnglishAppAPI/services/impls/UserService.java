@@ -3,6 +3,7 @@ package com.example.EnglishAppAPI.services.impls;
 import com.example.EnglishAppAPI.entities.UserEntity;
 import com.example.EnglishAppAPI.entities.indexes.UserDocument;
 import com.example.EnglishAppAPI.exceptions.NotFoundException;
+import com.example.EnglishAppAPI.mapstruct.dtos.NotificationDto;
 import com.example.EnglishAppAPI.mapstruct.dtos.NotificationPostDto;
 import com.example.EnglishAppAPI.mapstruct.dtos.UserInformationDto;
 import com.example.EnglishAppAPI.mapstruct.dtos.UserProfileDto;
@@ -19,6 +20,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -34,14 +36,16 @@ public class UserService implements IUserService {
     private final NotificationService notificationService;
     private final UserMapper userMapper;
     private final UserDocumentRepository userDocumentRepository;
+    private final SimpMessagingTemplate simpMessagingTemplate;
 
     @Autowired
-    public UserService(UserRepository userRepository, CloudinaryService cloudinaryService, NotificationService notificationService, UserMapper userMapper, UserDocumentRepository userDocumentRepository) {
+    public UserService(UserRepository userRepository, CloudinaryService cloudinaryService, NotificationService notificationService, UserMapper userMapper, UserDocumentRepository userDocumentRepository, SimpMessagingTemplate simpMessagingTemplate) {
         this.userRepository = userRepository;
         this.cloudinaryService = cloudinaryService;
         this.notificationService = notificationService;
         this.userMapper = userMapper;
         this.userDocumentRepository = userDocumentRepository;
+        this.simpMessagingTemplate = simpMessagingTemplate;
     }
 
     @Override
@@ -52,18 +56,35 @@ public class UserService implements IUserService {
                         .orElseThrow(() -> new NotFoundException("followedUser is not existed"));
         assert user != null;
 
-        user.getFollowers().add(followedUser);
-        followedUser.getFollowing().add(user);
-        user.setFollowingCount(user.getFollowingCount() + 1);
-        followedUser.setFollowersCount(followedUser.getFollowersCount() + 1);
+        boolean isFollowFeature = false;
+
+        if (followedUser.getFollowers().contains(user)) {
+            followedUser.getFollowers().remove(user);
+            followedUser.setFollowersCount(followedUser.getFollowersCount() - 1);
+        } else {
+            followedUser.getFollowers().add(user);
+            followedUser.setFollowersCount(followedUser.getFollowersCount() + 1);
+            isFollowFeature = true;
+        }
+        if (user.getFollowing().contains(followedUser)) {
+            user.getFollowing().remove(followedUser);
+            user.setFollowingCount(user.getFollowingCount() - 1);
+        } else {
+            user.getFollowing().add(followedUser);
+            user.setFollowingCount(user.getFollowingCount() + 1);
+            isFollowFeature = true;
+        }
 
         user = userRepository.save(user);
         followedUser = userRepository.save(followedUser);
         updateUser(followedUser);
         updateUser(user);
 
-        notificationService.addNotification(new NotificationPostDto(currentUserId, id, user.getFullName() + "is following you now", false, currentUserId, currentUserId));
-        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(ApiResponseStatus.SUCCESS, "follow user", ""));
+        if (isFollowFeature) {
+            NotificationDto notificationDto = notificationService.addNotification(new NotificationPostDto(currentUserId, id, user.getFullName() + "is following you now", false, currentUserId, currentUserId));
+            simpMessagingTemplate.convertAndSend("topic/user/notification/" + followedUser.getUserId(), notificationDto);
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(ApiResponseStatus.SUCCESS, isFollowFeature ? "follow user" : "unfollow user", ""));
     }
 
     @Override
@@ -133,6 +154,22 @@ public class UserService implements IUserService {
         Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by(sortBy));
         Page<UserEntity> page = userRepository.getFollowing(currentUserId, pageable);
         return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "get followers", page.map(userMapper::toNecessaryDto)));
+    }
+
+    @Override
+    public ResponseEntity<?> checkIfExist(Long currentUserId, Long id) {
+        UserEntity currentUser = userRepository.findById(currentUserId)
+                .orElse(null);
+        if (currentUser == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse(ApiResponseStatus.FAIL, "can find the current userId", ""));
+        }
+        UserEntity followedUser = userRepository.findById(id)
+                .orElse(null);
+        if (followedUser == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse(ApiResponseStatus.FAIL, "can find the followed user", ""));
+        }
+        boolean status = followedUser.getFollowers().contains(currentUser) || currentUser.getFollowing().contains(followedUser);
+        return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "check if the followed user exists", status));
     }
 
     private void updateUser(UserEntity user) {

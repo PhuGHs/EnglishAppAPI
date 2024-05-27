@@ -1,9 +1,6 @@
 package com.example.EnglishAppAPI.controllers;
 
-import com.example.EnglishAppAPI.mapstruct.dtos.LearningRoomPostInstantDto;
-import com.example.EnglishAppAPI.mapstruct.dtos.LearningRoomPostLaterDto;
-import com.example.EnglishAppAPI.mapstruct.dtos.JoinLearningRoomDto;
-import com.example.EnglishAppAPI.mapstruct.dtos.PromoteToOwnerDto;
+import com.example.EnglishAppAPI.mapstruct.dtos.*;
 import com.example.EnglishAppAPI.services.impls.LearningRoomService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
@@ -71,5 +68,11 @@ public class LearningRoomController {
     @PreAuthorize("hasAuthority('LEARNER')")
     public ResponseEntity<?> endRoom(@RequestBody @Valid JoinLearningRoomDto joinLearningRoomDto) {
         return learningRoomService.endRoom(joinLearningRoomDto.getRoomId(), joinLearningRoomDto.getUserId());
+    }
+
+    @PostMapping("/send-messages")
+    @PreAuthorize("hasAuthority('LEARNER')")
+    public ResponseEntity<?> sendMessages(@RequestBody @Valid LearningRoomMessagePostDto learningRoomMessagePostDto) {
+        return learningRoomService.sendMessages(learningRoomMessagePostDto);
     }
 }

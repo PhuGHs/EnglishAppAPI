@@ -13,12 +13,15 @@ import com.example.EnglishAppAPI.responses.ApiResponse;
 import com.example.EnglishAppAPI.responses.ApiResponseStatus;
 import com.example.EnglishAppAPI.services.interfaces.IReviewService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class ReviewService implements IReviewService {
@@ -39,11 +42,32 @@ public class ReviewService implements IReviewService {
 
     @Override
     public ResponseEntity<?> reviewLearner(ReviewPostDto reviewPostDto) {
-        Review review = reviewMapper.toEntity(reviewPostDto);
-        UserEntity user = review.getUserWhoWasReviewed();
+        if (reviewRepository.checkIfExists(reviewPostDto.getUserWhoWasReviewedId(), reviewPostDto.getUserWhoReviewedId())) {
+            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(new ApiResponse(ApiResponseStatus.FAIL, "You are not allowed to review a person many time", ""));
+        }
+        UserEntity userGetReviewed = userRepository.findById(reviewPostDto.getUserWhoWasReviewedId())
+                .orElseThrow(() -> new NotFoundException("User get reviewed not found"));
+        UserEntity userReviewed = userRepository.findById(reviewPostDto.getUserWhoWasReviewedId())
+                .orElseThrow(() -> new NotFoundException("User reviewed not found"));
+
+        Review review = Review.builder()
+                .comment(reviewPostDto.getComment())
+                .createdAt(new Date())
+                .star(reviewPostDto.getStar())
+                .userWhoReviewed(userReviewed)
+                .userWhoWasReviewed(userGetReviewed)
+                .build();
+
+        Long userWhoWasReviewed = userGetReviewed.getUserId();
+        userGetReviewed.setReviews_count(userGetReviewed.getReviews_count() + 1);
+        Float averageRating = reviewRepository.getAverageRating(userWhoWasReviewed);
+        userGetReviewed.setStar(Objects.requireNonNullElse(averageRating, 0.0f));
+
         review = reviewRepository.save(review);
+        userRepository.save(userGetReviewed);
+
         NotificationDto notificationDto = notificationService.addNotification(new NotificationPostDto(reviewPostDto.getUserWhoReviewedId(), reviewPostDto.getUserWhoWasReviewedId(), "a user had reviewed you on your profile", false, review.getReviewId(), review.getReviewId()));
-        simpMessagingTemplate.convertAndSend("/user/" + notificationDto.getReceiver().getUserId(), notificationDto);
+        simpMessagingTemplate.convertAndSend("topic/user/notification" + userWhoWasReviewed, notificationDto);
         return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "review learner", reviewMapper.toDto(review)));
     }
 
@@ -51,7 +75,7 @@ public class ReviewService implements IReviewService {
     public ResponseEntity<?> getReviews(Long userId) {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("user is not found"));
-        List<Review> reviews = reviewRepository.findByUserWhoWasReviewed(user);
+        List<Review> reviews = reviewRepository.findByUserWhoWasReviewed(user.getUserId());
         return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "get reviews", reviews.stream().map(reviewMapper::toDto)));
     }
 }

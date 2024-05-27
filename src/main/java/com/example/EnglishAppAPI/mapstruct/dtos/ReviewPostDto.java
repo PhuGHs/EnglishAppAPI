@@ -1,5 +1,6 @@
 package com.example.EnglishAppAPI.mapstruct.dtos;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -10,6 +11,7 @@ import lombok.Setter;
 import org.hibernate.validator.constraints.Range;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -28,4 +30,6 @@ public class ReviewPostDto {
     @JsonProperty("comment")
     @NotEmpty(message = "the comment field is required")
     private String comment;
+    @JsonIgnore
+    private Date createdAt = new Date();
 }

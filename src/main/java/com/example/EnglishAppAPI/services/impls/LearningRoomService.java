@@ -1,20 +1,11 @@
 package com.example.EnglishAppAPI.services.impls;
 
-import com.example.EnglishAppAPI.entities.EnglishTopic;
-import com.example.EnglishAppAPI.entities.LearningRoom;
-import com.example.EnglishAppAPI.entities.Participant;
-import com.example.EnglishAppAPI.entities.UserEntity;
+import com.example.EnglishAppAPI.entities.*;
 import com.example.EnglishAppAPI.exceptions.NotFoundException;
-import com.example.EnglishAppAPI.mapstruct.dtos.JoinLearningRoom;
-import com.example.EnglishAppAPI.mapstruct.dtos.JoinLearningRoomDto;
-import com.example.EnglishAppAPI.mapstruct.dtos.LearningRoomPostInstantDto;
-import com.example.EnglishAppAPI.mapstruct.dtos.LearningRoomPostLaterDto;
+import com.example.EnglishAppAPI.mapstruct.dtos.*;
 import com.example.EnglishAppAPI.mapstruct.mappers.LearningRoomMapper;
 import com.example.EnglishAppAPI.mapstruct.mappers.ParticipantMapper;
-import com.example.EnglishAppAPI.repositories.EnglishTopicRepository;
-import com.example.EnglishAppAPI.repositories.LearningRoomRepository;
-import com.example.EnglishAppAPI.repositories.ParticipantRepository;
-import com.example.EnglishAppAPI.repositories.UserRepository;
+import com.example.EnglishAppAPI.repositories.*;
 import com.example.EnglishAppAPI.responses.ApiResponse;
 import com.example.EnglishAppAPI.responses.ApiResponseStatus;
 import com.example.EnglishAppAPI.services.interfaces.ILearningRoomService;
@@ -22,6 +13,7 @@ import jakarta.annotation.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.stereotype.Service;
@@ -40,9 +32,10 @@ public class LearningRoomService implements ILearningRoomService {
     private final LearningRoomMapper learningRoomMapper;
     private final ParticipantMapper participantMapper;
     private final TaskScheduler taskScheduler;
-
+    private final LearningRoomMessageRepository learningRoomMessageRepository;
+    private SimpMessagingTemplate simpMessagingTemplate;
     @Autowired
-    public LearningRoomService(ParticipantRepository participantRepository, LearningRoomRepository learningRoomRepository, UserRepository userRepository, EnglishTopicRepository englishTopicRepository, LearningRoomMapper learningRoomMapper, ParticipantMapper participantMapper, TaskScheduler taskScheduler) {
+    public LearningRoomService(ParticipantRepository participantRepository, LearningRoomRepository learningRoomRepository, UserRepository userRepository, EnglishTopicRepository englishTopicRepository, LearningRoomMapper learningRoomMapper, ParticipantMapper participantMapper, TaskScheduler taskScheduler, LearningRoomMessageRepository learningRoomMessageRepository) {
         this.participantRepository = participantRepository;
         this.learningRoomRepository = learningRoomRepository;
         this.userRepository = userRepository;
@@ -50,6 +43,7 @@ public class LearningRoomService implements ILearningRoomService {
         this.learningRoomMapper = learningRoomMapper;
         this.participantMapper = participantMapper;
         this.taskScheduler = taskScheduler;
+        this.learningRoomMessageRepository = learningRoomMessageRepository;
     }
 
     @Override
@@ -215,5 +209,24 @@ public class LearningRoomService implements ILearningRoomService {
             learningRoomRepository.save(learningRoom);
         }
         return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "end room", learningRoomMapper.toDto(learningRoom)));
+    }
+
+    @Override
+    public ResponseEntity<?> sendMessages(LearningRoomMessagePostDto messagePostDto) {
+        Long userId = messagePostDto.getUserId();
+        Long roomId = messagePostDto.getRoomId();
+        if (!userRepository.existsById(userId)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse(ApiResponseStatus.FAIL, "user not found", ""));
+        }
+        if (!learningRoomRepository.existsById(roomId)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse(ApiResponseStatus.FAIL, "room not found", ""));
+        }
+        if (!participantRepository.checkIfExistedInAnotherRoom(userId, roomId)) {
+            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(new ApiResponse(ApiResponseStatus.FAIL, "You are not allowed to send messages in this room because you have not entered yet", ""));
+        }
+        LearningRoomMessage message = learningRoomMapper.toMessageEntity(messagePostDto);
+        message = learningRoomMessageRepository.save(message);
+        simpMessagingTemplate.convertAndSend("/topic/learning-room/message/" + roomId, learningRoomMapper.toMessageDto(message));
+        return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "message sent", learningRoomMapper.toMessageDto(message)));
     }
 }

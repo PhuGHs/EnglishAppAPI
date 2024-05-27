@@ -1,9 +1,6 @@
 package com.example.EnglishAppAPI.services.interfaces;
 
-import com.example.EnglishAppAPI.mapstruct.dtos.JoinLearningRoom;
-import com.example.EnglishAppAPI.mapstruct.dtos.JoinLearningRoomDto;
-import com.example.EnglishAppAPI.mapstruct.dtos.LearningRoomPostInstantDto;
-import com.example.EnglishAppAPI.mapstruct.dtos.LearningRoomPostLaterDto;
+import com.example.EnglishAppAPI.mapstruct.dtos.*;
 import jakarta.annotation.Nullable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -20,4 +17,5 @@ public interface ILearningRoomService {
     ResponseEntity<?> getParticipants(Long roomId, boolean isSpeaker);
     ResponseEntity<?> getLearningRooms(@Nullable LocalDateTime startDate, @Nullable LocalDateTime endDate, boolean isLive);
     ResponseEntity<?> endRoom(Long roomId, Long ownerId);
+    ResponseEntity<?> sendMessages(LearningRoomMessagePostDto messagePostDto);
 }

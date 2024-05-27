@@ -37,4 +37,10 @@ public class FollowerController {
     public ResponseEntity<?> getFollowing(@PathVariable Long currentUserId, @RequestParam(defaultValue = "0") int pageNumber, @RequestParam(defaultValue = "10") int pageSize, @RequestParam(defaultValue = "fullName") String sortBy) {
         return userService.getFollowing(currentUserId, pageNumber, pageSize, sortBy);
     }
+
+    @GetMapping("/{currentUserId}/{followedId}/check-if-exist")
+    @PreAuthorize("hasAuthority('LEARNER')")
+    public ResponseEntity<?> checkIfExists(@PathVariable Long currentUserId, @PathVariable Long followedId) {
+        return userService.checkIfExist(currentUserId, followedId);
+    }
 }
