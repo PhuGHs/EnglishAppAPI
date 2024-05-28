@@ -19,7 +19,8 @@ public class EnglishTopicQuestion {
     @Column(name = "question_name")
     private String questionName;
 
-    @Column(name = "sample_answer", columnDefinition = "VARCHAR(1000) CHARACTER SET utf8mb4")
+    @Column(name = "sample_answer")
+    @Lob
     private String sampleAnswer;
 
     @ManyToOne

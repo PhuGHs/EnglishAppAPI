@@ -13,4 +13,6 @@ public interface IShortStoryService {
     ResponseEntity<ApiResponse> updateShortStory(Long id, ShortStoryPostDto shortStoryPostDto);
     ResponseEntity<ApiResponse> getAllShortStories(int pageNumber, int pageSize, ShortStoryOrderBy sortBy);
     ResponseEntity<ApiResponse> likeStory(Long id);
+    ResponseEntity<?> getShortStory(Long id);
+    ResponseEntity<?> getRandom5ShortStories(Long shortStoryId);
 }

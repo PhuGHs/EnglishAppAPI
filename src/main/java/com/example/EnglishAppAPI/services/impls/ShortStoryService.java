@@ -20,6 +20,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -34,6 +36,7 @@ public class ShortStoryService implements IShortStoryService {
     public ResponseEntity<ApiResponse> createNewShortStories(ShortStoryPostDto shortStoryPostDto) {
         try {
             ShortStory story = shortStoryMapper.toEntity(new ShortStoryPostDto(shortStoryPostDto.getTitle(), shortStoryPostDto.getParagraph(), ""));
+            story.setCreatedDate(new Date());
             ShortStory savedStory = shortStoryRepository.save(story);
             Map<String, Object> result = cloudinaryService.uploadFile(shortStoryPostDto.getImage(), "short-story"+ savedStory.getId().toString(), true, true);
             if (!result.containsKey("public_id")) {
@@ -82,5 +85,18 @@ public class ShortStoryService implements IShortStoryService {
         shortStory.setNumberOfLikes(shortStory.getNumberOfLikes() + 1);
         shortStoryRepository.save(shortStory);
         return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(ApiResponseStatus.SUCCESS, "like story", shortStoryMapper.toDto(shortStory)));
+    }
+
+    @Override
+    public ResponseEntity<?> getShortStory(Long id) {
+        ShortStory shortStory = shortStoryRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("cannot find the short story"));
+        return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "get short story", shortStoryMapper.toDto(shortStory)));
+    }
+
+    @Override
+    public ResponseEntity<?> getRandom5ShortStories(Long shortStoryId) {
+        List<ShortStory> stories = shortStoryRepository.get5RandomShortStories(shortStoryId);
+        return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "get random 5 stories", stories.stream().map(shortStoryMapper::toDto)));
     }
 }

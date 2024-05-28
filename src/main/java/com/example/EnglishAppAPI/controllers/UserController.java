@@ -47,7 +47,6 @@ public class UserController {
     }
 
     @GetMapping("/{userId}/get-user-profile")
-    @PreAuthorize("hasAuthority('LEARNER')")
     public ResponseEntity<?> getUserProfile(@PathVariable Long userId) {
         return userService.getUserInfo(userId);
     }

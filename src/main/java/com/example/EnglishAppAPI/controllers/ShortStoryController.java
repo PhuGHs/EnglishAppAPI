@@ -50,4 +50,14 @@ public class ShortStoryController {
     ) {
         return shortStoryService.getAllShortStories(pageNumber, pageSize, sortBy);
     }
+
+    @GetMapping("/{id}/get")
+    public ResponseEntity<?> getAShortStory(@PathVariable Long id) {
+        return shortStoryService.getShortStory(id);
+    }
+
+    @GetMapping("/get-random-5/{excluded_id}")
+    public ResponseEntity<?> getRandom5(@PathVariable Long excluded_id) {
+        return shortStoryService.getRandom5ShortStories(excluded_id);
+    }
 }

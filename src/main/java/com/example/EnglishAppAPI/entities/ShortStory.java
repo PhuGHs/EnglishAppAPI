@@ -23,6 +23,7 @@ public class ShortStory {
     @Column(nullable = false, name = "title")
     private String title;
     @Column(nullable = false, name = "paragraph")
+    @Lob
     private String paragraph;
     @Column(name = "number_of_likes")
     private int numberOfLikes = 0;

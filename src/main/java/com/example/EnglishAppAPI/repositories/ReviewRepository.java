@@ -11,7 +11,7 @@ import java.util.List;
 
 @Repository
 public interface ReviewRepository extends JpaRepository<Review, Long> {
-    @Query("SELECT r FROM Review r WHERE r.userWhoWasReviewed = :userId")
+    @Query("SELECT r FROM Review r WHERE r.userWhoWasReviewed.userId = :userId")
     List<Review> findByUserWhoWasReviewed(@Param("userId") Long userId);
 
     @Query("SELECT ROUND(AVG (r.star)) as average_rating FROM Review r WHERE r.userWhoWasReviewed.userId = :userId")
