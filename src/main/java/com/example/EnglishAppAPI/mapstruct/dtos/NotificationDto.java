@@ -1,5 +1,6 @@
 package com.example.EnglishAppAPI.mapstruct.dtos;
 
+import com.example.EnglishAppAPI.mapstruct.enums.NotificationType;
 import com.example.EnglishAppAPI.mapstruct.serializers.CustomDateSerializer;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -29,6 +30,8 @@ public class NotificationDto {
     @JsonProperty("created_at")
     @JsonSerialize(using = CustomDateSerializer.class)
     private Date createdAt;
+    @JsonProperty("type")
+    private NotificationType type;
     @JsonProperty("created_item_id")
     private Long createdItemId;
     @JsonProperty("entity_item_id")

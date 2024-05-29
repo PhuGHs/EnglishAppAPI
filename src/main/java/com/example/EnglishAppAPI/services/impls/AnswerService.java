@@ -4,12 +4,15 @@ import com.example.EnglishAppAPI.entities.Answer;
 import com.example.EnglishAppAPI.entities.Discussion;
 import com.example.EnglishAppAPI.entities.Notification;
 import com.example.EnglishAppAPI.entities.UserEntity;
+import com.example.EnglishAppAPI.entities.indexes.DiscussionDocument;
 import com.example.EnglishAppAPI.exceptions.NotFoundException;
 import com.example.EnglishAppAPI.mapstruct.dtos.AnswerDto;
 import com.example.EnglishAppAPI.mapstruct.dtos.AnswerPostDto;
 import com.example.EnglishAppAPI.mapstruct.dtos.NotificationDto;
 import com.example.EnglishAppAPI.mapstruct.dtos.NotificationPostDto;
+import com.example.EnglishAppAPI.mapstruct.enums.NotificationType;
 import com.example.EnglishAppAPI.mapstruct.mappers.AnswerMapper;
+import com.example.EnglishAppAPI.repositories.elas.DiscussionDocumentRepository;
 import com.example.EnglishAppAPI.responses.ApiResponse;
 import com.example.EnglishAppAPI.responses.ApiResponseStatus;
 import com.example.EnglishAppAPI.repositories.AnswerRepository;
@@ -28,6 +31,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.Optional;
 
 @Service
 public class AnswerService implements IAnswerService {
@@ -36,16 +40,18 @@ public class AnswerService implements IAnswerService {
     private final DiscussionRepository discussionRepository;
     private final AnswerMapper mapper;
     private final NotificationService notificationService;
-    private SimpMessagingTemplate simpMessagingTemplate;
+    private final SimpMessagingTemplate simpMessagingTemplate;
+    private final DiscussionDocumentRepository discussionDocumentRepository;
 
     @Autowired
-    public AnswerService(AnswerRepository answerRepository, UserRepository userRepository, DiscussionRepository discussionRepository, AnswerMapper mapper, NotificationService notificationService, SimpMessagingTemplate simpMessagingTemplate) {
+    public AnswerService(AnswerRepository answerRepository, UserRepository userRepository, DiscussionRepository discussionRepository, AnswerMapper mapper, NotificationService notificationService, SimpMessagingTemplate simpMessagingTemplate, DiscussionDocumentRepository discussionDocumentRepository) {
         this.answerRepository = answerRepository;
         this.userRepository = userRepository;
         this.discussionRepository = discussionRepository;
         this.mapper = mapper;
         this.notificationService = notificationService;
         this.simpMessagingTemplate = simpMessagingTemplate;
+        this.discussionDocumentRepository = discussionDocumentRepository;
     }
 
     @Override
@@ -68,6 +74,7 @@ public class AnswerService implements IAnswerService {
                 .orElseThrow(() -> new NotFoundException("User is not found"));
         Discussion discussion = discussionRepository.findById(answerDto.getDiscussionId())
                 .orElseThrow(() -> new NotFoundException("Discussion Id is invalid"));
+        discussion.setNumberOfAnswers(discussion.getNumberOfAnswers() + 1);
         Answer answer = Answer.builder()
                 .discussion(discussion)
                 .user(user)
@@ -78,7 +85,9 @@ public class AnswerService implements IAnswerService {
 
         Answer answer1 = answerRepository.save(answer);
         AnswerDto answerGetDto = mapper.toDto(answer1);
-        NotificationDto notification = notificationService.addNotification(new NotificationPostDto(answerDto.getUserId(), discussion.getUser().getUserId(), user.getFullName() + "commented on your discussion", false, answer1.getAnswerId(), discussion.getId()));
+        discussion = discussionRepository.save(discussion);
+        updateDocument(discussion);
+        NotificationDto notification = notificationService.addNotification(new NotificationPostDto(answerDto.getUserId(), discussion.getUser().getUserId(), user.getFullName() + "commented on your discussion", false, NotificationType.answer ,answer1.getAnswerId(), discussion.getId()));
         simpMessagingTemplate.convertAndSend("/user/"+ notification.getReceiver().getUserId(), notification);
         return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(ApiResponseStatus.SUCCESS, "Answered the discussion successfully", answerGetDto));
     }
@@ -106,5 +115,17 @@ public class AnswerService implements IAnswerService {
         }
         answerRepository.deleteById(answerId);
         return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(ApiResponseStatus.SUCCESS, "delete successfully", ""));
+    }
+
+    private void updateDocument(Discussion discussion) {
+        Optional<DiscussionDocument> discussionDocument = discussionDocumentRepository.findById(discussion.getId());
+        if (discussionDocument.isPresent()) {
+            DiscussionDocument discussionDoc = discussionDocument.get();
+            discussionDoc.setTitle(discussion.getTitle());
+            discussionDoc.setCreatedDate(discussion.getCreatedDate());
+            discussionDoc.setUpdatedDate(new Date());
+            discussionDoc.setNumberOfAnswers(discussion.getNumberOfAnswers());
+        }
+        discussionRepository.save(discussion);
     }
 }

@@ -6,6 +6,7 @@ import com.example.EnglishAppAPI.exceptions.NotFoundException;
 import com.example.EnglishAppAPI.mapstruct.dtos.NotificationDto;
 import com.example.EnglishAppAPI.mapstruct.dtos.NotificationPostDto;
 import com.example.EnglishAppAPI.mapstruct.dtos.ReviewPostDto;
+import com.example.EnglishAppAPI.mapstruct.enums.NotificationType;
 import com.example.EnglishAppAPI.mapstruct.mappers.ReviewMapper;
 import com.example.EnglishAppAPI.repositories.ReviewRepository;
 import com.example.EnglishAppAPI.repositories.UserRepository;
@@ -66,7 +67,7 @@ public class ReviewService implements IReviewService {
         review = reviewRepository.save(review);
         userRepository.save(userGetReviewed);
 
-        NotificationDto notificationDto = notificationService.addNotification(new NotificationPostDto(reviewPostDto.getUserWhoReviewedId(), reviewPostDto.getUserWhoWasReviewedId(), "a user had reviewed you on your profile", false, review.getReviewId(), review.getReviewId()));
+        NotificationDto notificationDto = notificationService.addNotification(new NotificationPostDto(reviewPostDto.getUserWhoReviewedId(), reviewPostDto.getUserWhoWasReviewedId(), userReviewed.getFullName() + "put a comment you on your profile", false, NotificationType.review ,review.getReviewId(), review.getReviewId()));
         simpMessagingTemplate.convertAndSend("topic/user/notification" + userWhoWasReviewed, notificationDto);
         return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "review learner", reviewMapper.toDto(review)));
     }

@@ -7,6 +7,7 @@ import com.example.EnglishAppAPI.mapstruct.dtos.NotificationDto;
 import com.example.EnglishAppAPI.mapstruct.dtos.NotificationPostDto;
 import com.example.EnglishAppAPI.mapstruct.dtos.UserInformationDto;
 import com.example.EnglishAppAPI.mapstruct.dtos.UserProfileDto;
+import com.example.EnglishAppAPI.mapstruct.enums.NotificationType;
 import com.example.EnglishAppAPI.mapstruct.mappers.UserMapper;
 import com.example.EnglishAppAPI.repositories.elas.UserDocumentRepository;
 import com.example.EnglishAppAPI.responses.ApiResponse;
@@ -81,7 +82,7 @@ public class UserService implements IUserService {
         updateUser(user);
 
         if (isFollowFeature) {
-            NotificationDto notificationDto = notificationService.addNotification(new NotificationPostDto(currentUserId, id, user.getFullName() + "is following you now", false, currentUserId, currentUserId));
+            NotificationDto notificationDto = notificationService.addNotification(new NotificationPostDto(currentUserId, id, user.getFullName() + "is following you now", false, NotificationType.follow ,currentUserId, currentUserId));
             simpMessagingTemplate.convertAndSend("topic/user/notification/" + followedUser.getUserId(), notificationDto);
         }
         return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(ApiResponseStatus.SUCCESS, isFollowFeature ? "follow user" : "unfollow user", ""));

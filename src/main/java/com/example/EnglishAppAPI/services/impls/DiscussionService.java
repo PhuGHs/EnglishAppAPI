@@ -1,13 +1,19 @@
 package com.example.EnglishAppAPI.services.impls;
 
+import com.example.EnglishAppAPI.entities.indexes.DiscussionDocument;
 import com.example.EnglishAppAPI.mapstruct.dtos.DiscussionDto;
 import com.example.EnglishAppAPI.entities.Discussion;
 import com.example.EnglishAppAPI.entities.EnglishTopic;
 import com.example.EnglishAppAPI.entities.UserEntity;
 import com.example.EnglishAppAPI.exceptions.NotFoundException;
 import com.example.EnglishAppAPI.mapstruct.dtos.DiscussionPostDto;
+import com.example.EnglishAppAPI.mapstruct.dtos.NotificationDto;
+import com.example.EnglishAppAPI.mapstruct.dtos.NotificationPostDto;
 import com.example.EnglishAppAPI.mapstruct.enums.DiscussionOrderBy;
+import com.example.EnglishAppAPI.mapstruct.enums.NotificationType;
 import com.example.EnglishAppAPI.mapstruct.mappers.DiscussionMapper;
+import com.example.EnglishAppAPI.mapstruct.mappers.EnglishTopicMapper;
+import com.example.EnglishAppAPI.mapstruct.mappers.UserMapper;
 import com.example.EnglishAppAPI.repositories.elas.DiscussionDocumentRepository;
 import com.example.EnglishAppAPI.responses.ApiResponse;
 import com.example.EnglishAppAPI.responses.ApiResponseStatus;
@@ -22,12 +28,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class DiscussionService implements IDiscussionService {
@@ -36,14 +44,22 @@ public class DiscussionService implements IDiscussionService {
     private final EnglishTopicRepository englishTopicRepository;
     private final DiscussionMapper discussionMapper;
     private final DiscussionDocumentRepository discussionDocumentRepository;
+    private final SimpMessagingTemplate simpMessagingTemplate;
+    private final NotificationService notificationService;
+    private final UserMapper userMapper;
+    private final EnglishTopicMapper englishTopicMapper;
 
     @Autowired
-    public DiscussionService(DiscussionRepository discussionRepository, UserRepository userRepository, EnglishTopicRepository englishTopicRepository, DiscussionMapper discussionMapper, DiscussionDocumentRepository discussionDocumentRepository) {
+    public DiscussionService(DiscussionRepository discussionRepository, UserRepository userRepository, EnglishTopicRepository englishTopicRepository, DiscussionMapper discussionMapper, DiscussionDocumentRepository discussionDocumentRepository, SimpMessagingTemplate simpMessagingTemplate, NotificationService notificationService, UserMapper userMapper, EnglishTopicMapper englishTopicMapper) {
         this.discussionRepository = discussionRepository;
         this.userRepository = userRepository;
         this.englishTopicRepository = englishTopicRepository;
         this.discussionMapper = discussionMapper;
         this.discussionDocumentRepository = discussionDocumentRepository;
+        this.simpMessagingTemplate = simpMessagingTemplate;
+        this.notificationService = notificationService;
+        this.userMapper = userMapper;
+        this.englishTopicMapper = englishTopicMapper;
     }
 
     @Override
@@ -75,7 +91,12 @@ public class DiscussionService implements IDiscussionService {
                 .answers(new HashSet<>())
                 .build();
         discussion = discussionRepository.save(discussion);
-        discussionDocumentRepository.save(discussionMapper.toDocument(discussion));
+        discussionDocumentRepository.save(DiscussionDocument.fromEntity(discussion, userMapper.toElas(discussion.getUser()), englishTopicMapper.toDto(discussion.getTopic())));
+
+        for (UserEntity us : user.getFollowers()) {
+            NotificationDto notificationDto = notificationService.addNotification(new NotificationPostDto(user.getUserId(), us.getUserId(), user.getFullName() + " the one you are following, created a new discussion!", false, NotificationType.discussion ,discussion.getId(), discussion.getId()));
+            simpMessagingTemplate.convertAndSend("topic/user/notification/" + us.getUserId(), notificationDto);
+        }
         return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(ApiResponseStatus.SUCCESS, "Created a new discussion", discussionMapper.toDto(discussion)));
     }
 
@@ -93,7 +114,7 @@ public class DiscussionService implements IDiscussionService {
         dis.setTopic(topic);
         dis.setTitle(discussion.getTitle());
         dis = discussionRepository.save(dis);
-        discussionDocumentRepository.save(discussionMapper.toDocument(dis));
+        updateDocument(dis);
         return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(ApiResponseStatus.SUCCESS, "discussion was updated", discussionMapper.toDto(dis)));
     }
 
@@ -119,5 +140,18 @@ public class DiscussionService implements IDiscussionService {
         Pageable pageable = PageRequest.of(pageNumber, pageSize, sortBy == DiscussionOrderBy.id ? Sort.by(sortBy.toString()).ascending() : Sort.by(sortBy.toString()).descending());
         Page<Discussion> discussionPage = discussionRepository.findByTopic(topic, pageable);
         return discussionPage.map(discussionMapper::toDto);
+    }
+
+    private void updateDocument(Discussion discussion) {
+        Optional<DiscussionDocument> discussionDocument = discussionDocumentRepository.findById(discussion.getId());
+        if (discussionDocument.isPresent()) {
+            DiscussionDocument discussionDoc = discussionDocument.get();
+            discussionDoc.setTitle(discussion.getTitle());
+            discussionDoc.setUser(userMapper.toElas(discussion.getUser()));
+            discussionDoc.setTopic(englishTopicMapper.toDto(discussion.getTopic()));
+            discussionDoc.setCreatedDate(discussion.getCreatedDate());
+            discussionDoc.setUpdatedDate(new Date());
+            discussionDoc.setNumberOfAnswers(discussion.getNumberOfAnswers());
+        }
     }
 }

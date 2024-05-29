@@ -1,5 +1,6 @@
 package com.example.EnglishAppAPI.mapstruct.dtos;
 
+import com.example.EnglishAppAPI.mapstruct.enums.NotificationType;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -21,6 +22,7 @@ public class NotificationPostDto {
     private String message;
     @JsonProperty("is_read")
     private boolean isRead = false;
+    private NotificationType type;
     @JsonProperty("created_item_id")
     private Long createdItemId;
     @JsonProperty("entity_item_id")

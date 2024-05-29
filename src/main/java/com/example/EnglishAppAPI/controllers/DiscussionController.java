@@ -49,9 +49,9 @@ public class DiscussionController {
         return discussionService.getUserDiscussions(pageNumber, pageSize, sortBy, userId);
     }
 
-    @GetMapping("/popular-discussions")
+    @GetMapping("/{userId}/popular-discussions")
     @PreAuthorize("hasAuthority('LEARNER')")
-    public ResponseEntity<ApiResponse> getTopDiscussions() {
+    public ResponseEntity<ApiResponse> getTopDiscussions(@PathVariable Long userId) {
         return discussionService.getTopDiscussions();
     }
 

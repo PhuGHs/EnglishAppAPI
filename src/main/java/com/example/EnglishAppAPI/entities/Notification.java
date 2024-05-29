@@ -1,5 +1,6 @@
 package com.example.EnglishAppAPI.entities;
 
+import com.example.EnglishAppAPI.mapstruct.enums.NotificationType;
 import com.example.EnglishAppAPI.mapstruct.serializers.CustomDateSerializer;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import jakarta.persistence.*;
@@ -41,6 +42,9 @@ public class Notification {
 
     @Column(name = "created_item_id")
     private Long createdItemId;
+
+    @Column(name = "type")
+    private NotificationType type;
 
     @Column(name = "entity_item_id")
     private Long entityItemId;
