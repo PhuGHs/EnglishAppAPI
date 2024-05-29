@@ -22,8 +22,8 @@ public class DiscussionDto {
     private String title;
     @JsonProperty("user")
     private UserNecessaryDto user;
-    @JsonProperty("english_topic")
-    private EnglishTopicDto topic;
+    @JsonProperty("topic")
+    private DiscussionTopicDto topic;
     @JsonProperty("number_of_answers")
     private int numberOfAnswers;
     @JsonProperty("created_date")

@@ -26,9 +26,6 @@ public class EnglishTopic {
     private String content;
 
     @OneToMany(mappedBy = "topic")
-    private Set<Discussion> discussions = new HashSet<>();
-
-    @OneToMany(mappedBy = "topic")
     private Set<EnglishTopicQuestion> questions = new HashSet<>();
 
     @OneToMany(mappedBy = "topic")

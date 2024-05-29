@@ -1,19 +1,19 @@
 package com.example.EnglishAppAPI.services.impls;
 
+import com.example.EnglishAppAPI.entities.DiscussionTopic;
 import com.example.EnglishAppAPI.entities.indexes.DiscussionDocument;
-import com.example.EnglishAppAPI.mapstruct.dtos.DiscussionDto;
+import com.example.EnglishAppAPI.mapstruct.dtos.*;
 import com.example.EnglishAppAPI.entities.Discussion;
 import com.example.EnglishAppAPI.entities.EnglishTopic;
 import com.example.EnglishAppAPI.entities.UserEntity;
 import com.example.EnglishAppAPI.exceptions.NotFoundException;
-import com.example.EnglishAppAPI.mapstruct.dtos.DiscussionPostDto;
-import com.example.EnglishAppAPI.mapstruct.dtos.NotificationDto;
-import com.example.EnglishAppAPI.mapstruct.dtos.NotificationPostDto;
 import com.example.EnglishAppAPI.mapstruct.enums.DiscussionOrderBy;
 import com.example.EnglishAppAPI.mapstruct.enums.NotificationType;
 import com.example.EnglishAppAPI.mapstruct.mappers.DiscussionMapper;
+import com.example.EnglishAppAPI.mapstruct.mappers.DiscussionTopicMapper;
 import com.example.EnglishAppAPI.mapstruct.mappers.EnglishTopicMapper;
 import com.example.EnglishAppAPI.mapstruct.mappers.UserMapper;
+import com.example.EnglishAppAPI.repositories.DiscussionTopicRepository;
 import com.example.EnglishAppAPI.repositories.elas.DiscussionDocumentRepository;
 import com.example.EnglishAppAPI.responses.ApiResponse;
 import com.example.EnglishAppAPI.responses.ApiResponseStatus;
@@ -32,10 +32,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class DiscussionService implements IDiscussionService {
@@ -47,10 +44,11 @@ public class DiscussionService implements IDiscussionService {
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final NotificationService notificationService;
     private final UserMapper userMapper;
-    private final EnglishTopicMapper englishTopicMapper;
+    private final DiscussionTopicMapper discussionTopicMapper;
+    private final DiscussionTopicRepository discussionTopicRepository;
 
     @Autowired
-    public DiscussionService(DiscussionRepository discussionRepository, UserRepository userRepository, EnglishTopicRepository englishTopicRepository, DiscussionMapper discussionMapper, DiscussionDocumentRepository discussionDocumentRepository, SimpMessagingTemplate simpMessagingTemplate, NotificationService notificationService, UserMapper userMapper, EnglishTopicMapper englishTopicMapper) {
+    public DiscussionService(DiscussionRepository discussionRepository, UserRepository userRepository, EnglishTopicRepository englishTopicRepository, DiscussionMapper discussionMapper, DiscussionDocumentRepository discussionDocumentRepository, SimpMessagingTemplate simpMessagingTemplate, NotificationService notificationService, UserMapper userMapper, DiscussionTopicMapper discussionTopicMapper, DiscussionTopicRepository discussionTopicRepository) {
         this.discussionRepository = discussionRepository;
         this.userRepository = userRepository;
         this.englishTopicRepository = englishTopicRepository;
@@ -59,7 +57,17 @@ public class DiscussionService implements IDiscussionService {
         this.simpMessagingTemplate = simpMessagingTemplate;
         this.notificationService = notificationService;
         this.userMapper = userMapper;
-        this.englishTopicMapper = englishTopicMapper;
+        this.discussionTopicMapper = discussionTopicMapper;
+        this.discussionTopicRepository = discussionTopicRepository;
+    }
+
+    @Override
+    public ResponseEntity<?> getDiscussion(Long id) {
+        Discussion discussion = discussionRepository.findById(id).orElse(null);
+        if (discussion == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse(ApiResponseStatus.FAIL, "get fail", ""));
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(ApiResponseStatus.SUCCESS, "get discussion", discussionMapper.toDto(discussion)));
     }
 
     @Override
@@ -79,19 +87,19 @@ public class DiscussionService implements IDiscussionService {
         UserEntity user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new NotFoundException("Invalid user ID"));
 
-        EnglishTopic topic = englishTopicRepository.findById(request.getEnglishTopicId())
-                .orElseThrow(() -> new NotFoundException("Invalid topic ID"));
+        DiscussionTopic discussionTopic = discussionTopicRepository.findById(request.getDiscussionTopicId())
+                .orElseThrow(() -> new NotFoundException("Invalid topic"));
 
         Discussion discussion = Discussion.builder()
                 .title(request.getTitle())
                 .createdDate(new Date())
                 .updatedDate(new Date())
                 .user(user)
-                .topic(topic)
+                .topic(discussionTopic)
                 .answers(new HashSet<>())
                 .build();
         discussion = discussionRepository.save(discussion);
-        discussionDocumentRepository.save(DiscussionDocument.fromEntity(discussion, userMapper.toElas(discussion.getUser()), englishTopicMapper.toDto(discussion.getTopic())));
+        discussionDocumentRepository.save(DiscussionDocument.fromEntity(discussion, userMapper.toElas(discussion.getUser()), discussionTopicMapper.toDto(discussion.getTopic())));
 
         for (UserEntity us : user.getFollowers()) {
             NotificationDto notificationDto = notificationService.addNotification(new NotificationPostDto(user.getUserId(), us.getUserId(), user.getFullName() + " the one you are following, created a new discussion!", false, NotificationType.discussion ,discussion.getId(), discussion.getId()));
@@ -109,9 +117,9 @@ public class DiscussionService implements IDiscussionService {
         if (!user.getUserId().equals(dis.getUser().getUserId())) {
             return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(new ApiResponse(ApiResponseStatus.FAIL, "u dont own the discussion", ""));
         }
-        EnglishTopic topic = englishTopicRepository.findById(discussion.getEnglishTopicId())
-                .orElseThrow(() -> new NotFoundException("Can't find the topic with the provided id"));
-        dis.setTopic(topic);
+        DiscussionTopic discussionTopic = discussionTopicRepository.findById(discussion.getDiscussionTopicId())
+                        .orElseThrow(() -> new NotFoundException("cant find discussion topic Id"));
+        dis.setTopic(discussionTopic);
         dis.setTitle(discussion.getTitle());
         dis = discussionRepository.save(dis);
         updateDocument(dis);
@@ -142,13 +150,26 @@ public class DiscussionService implements IDiscussionService {
         return discussionPage.map(discussionMapper::toDto);
     }
 
+    @Override
+    public ResponseEntity<?> addTopic(DiscussionTopicPostDto dto) {
+        DiscussionTopic discussionTopic = discussionTopicMapper.toEntity(dto);
+        discussionTopicRepository.save(discussionTopic);
+        return ResponseEntity.ok("ok");
+    }
+
+    @Override
+    public ResponseEntity<?> getAllTopics() {
+        List<DiscussionTopic> discussionTopics = discussionTopicRepository.findAll();
+        return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "get all topics", discussionTopics.stream().map(discussionTopicMapper::toDto)));
+    }
+
     private void updateDocument(Discussion discussion) {
         Optional<DiscussionDocument> discussionDocument = discussionDocumentRepository.findById(discussion.getId());
         if (discussionDocument.isPresent()) {
             DiscussionDocument discussionDoc = discussionDocument.get();
             discussionDoc.setTitle(discussion.getTitle());
             discussionDoc.setUser(userMapper.toElas(discussion.getUser()));
-            discussionDoc.setTopic(englishTopicMapper.toDto(discussion.getTopic()));
+            discussionDoc.setTopic(discussionTopicMapper.toDto(discussion.getTopic()));
             discussionDoc.setCreatedDate(discussion.getCreatedDate());
             discussionDoc.setUpdatedDate(new Date());
             discussionDoc.setNumberOfAnswers(discussion.getNumberOfAnswers());

@@ -3,6 +3,7 @@ package com.example.EnglishAppAPI.entities.indexes;
 import com.example.EnglishAppAPI.entities.Discussion;
 import com.example.EnglishAppAPI.entities.EnglishTopic;
 import com.example.EnglishAppAPI.entities.UserEntity;
+import com.example.EnglishAppAPI.mapstruct.dtos.DiscussionTopicDto;
 import com.example.EnglishAppAPI.mapstruct.dtos.EnglishTopicDto;
 import com.example.EnglishAppAPI.mapstruct.dtos.UserElasDto;
 import com.example.EnglishAppAPI.mapstruct.dtos.UserNecessaryDto;
@@ -39,9 +40,9 @@ public class DiscussionDocument {
     @Field(name = "user", type = FieldType.Object)
     private UserElasDto user;
     @Field(type = FieldType.Object, name = "topic")
-    private EnglishTopicDto topic;
+    private DiscussionTopicDto topic;
 
-    public static DiscussionDocument fromEntity(Discussion discussion, UserElasDto userNecessaryDto, EnglishTopicDto englishTopicDto) {
+    public static DiscussionDocument fromEntity(Discussion discussion, UserElasDto userNecessaryDto, DiscussionTopicDto englishTopicDto) {
         DiscussionDocument discussionDocument = new DiscussionDocument();
         discussionDocument.id = discussion.getId();
         discussionDocument.title = discussion.getTitle();

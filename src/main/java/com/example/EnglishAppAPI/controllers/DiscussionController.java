@@ -55,6 +55,12 @@ public class DiscussionController {
         return discussionService.getTopDiscussions();
     }
 
+    @GetMapping("/{discussionId}/get")
+    @PreAuthorize("hasAuthority('LEARNER')")
+    public ResponseEntity<?> getDiscussion(@PathVariable Long discussionId) {
+        return discussionService.getDiscussion(discussionId);
+    }
+
     @GetMapping("/{topicId}")
     @PreAuthorize("hasAuthority('LEARNER')")
     public Page<DiscussionDto> getDiscussionsByTopic(

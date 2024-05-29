@@ -41,8 +41,8 @@ public class Discussion {
     private UserEntity user;
 
     @ManyToOne
-    @JoinColumn(name = "topic_id")
-    private EnglishTopic topic;
+    @JoinColumn(name = "discussion_topic_id")
+    private DiscussionTopic topic;
 
     @OneToMany(mappedBy = "discussion")
     private Set<Answer> answers;

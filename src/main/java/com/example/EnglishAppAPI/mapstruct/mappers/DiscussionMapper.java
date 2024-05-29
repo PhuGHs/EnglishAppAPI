@@ -10,7 +10,7 @@ import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 import org.springframework.beans.factory.annotation.Autowired;
 
-@Mapper(componentModel = "spring", uses = {UserMapper.class, EnglishTopicMapper.class})
+@Mapper(componentModel = "spring", uses = {UserMapper.class, DiscussionTopicMapper.class})
 public interface DiscussionMapper {
     @Mapping(source = "user", target = "user")
     @Mapping(source = "topic", target = "topic")

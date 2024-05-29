@@ -17,7 +17,7 @@ public class DiscussionPostDto {
     @JsonProperty("user_id")
     @NotNull(message = "user is required")
     private Long userId;
-    @JsonProperty("english_topic_id")
+    @JsonProperty("discussion_topic_id")
     @NotNull(message = "topic is required")
-    private Long englishTopicId;
+    private Long discussionTopicId;
 }
