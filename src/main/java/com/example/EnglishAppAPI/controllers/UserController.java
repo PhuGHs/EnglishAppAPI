@@ -5,6 +5,7 @@ import com.example.EnglishAppAPI.services.impls.SearchService;
 import com.example.EnglishAppAPI.services.impls.UserService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -36,8 +37,8 @@ public class UserController {
 
     @GetMapping("/{userId}/recommend-user-based-on-common-interests")
     @PreAuthorize("hasAuthority('LEARNER')")
-    public ResponseEntity<?> recommendUserBasedOnCommonInterests(@PathVariable Long userId) {
-        return searchService.recommendUsersBasedOnCommonInterests(userId);
+    public ResponseEntity<?> recommendUserBasedOnCommonInterests(@PathVariable Long userId, @RequestParam("page") int page, @RequestParam("size") int size ) throws IOException {
+        return searchService.recommendUsersBasedOnCommonInterests(userId, page, size);
     }
 
     @GetMapping("/{userId}/recommend-user-based-on-englishLevel")

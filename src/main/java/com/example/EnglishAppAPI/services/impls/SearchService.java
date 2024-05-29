@@ -2,8 +2,13 @@ package com.example.EnglishAppAPI.services.impls;
 
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._types.FieldValue;
+import co.elastic.clients.elasticsearch._types.SortOptions;
+import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.elasticsearch._types.query_dsl.MatchQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
+import co.elastic.clients.elasticsearch._types.query_dsl.TermsQueryField;
+import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 import com.example.EnglishAppAPI.entities.EnglishLevel;
@@ -33,6 +38,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 @Service
 public class SearchService implements ISearchService {
@@ -62,35 +68,68 @@ public class SearchService implements ISearchService {
     }
 
     @Override
-    public ResponseEntity<?> recommendUsersBasedOnCommonInterests(Long currentUserId) {
-        Set<Interest> currentUserInterests = userRepository.findById(currentUserId)
-                .orElseThrow(() -> new NotFoundException("user not found")).getInterests();
+    public ResponseEntity<?> recommendUsersBasedOnCommonInterests(Long currentUserId, int page, int size) throws IOException {
+        List<String> interestNames = userRepository.findById(currentUserId).orElseThrow(() -> new NotFoundException("cant find the user")).getInterests().stream().map(Interest::getInterestName).toList();
+        
+        Supplier<Query> interestQuerySupplier = () -> Query.of(q -> q.terms(t -> t.field("interests.name")
+                .terms(TermsQueryField.of(tf -> tf.value(interestNames.stream().map(FieldValue::of).collect(Collectors.toList()))))));
 
-        List<UserEntity> recommendedUsers = userRepository.findAll()
-                .stream()
-                .filter(user -> !Objects.equals(user.getUserId(), currentUserId) && !user.getInterests().isEmpty())
-                .sorted((u1, u2) -> {
-                    int commonInterests = 0;
-                    for (Interest interest : currentUserInterests) {
-                        if (u1.getInterests().contains(interest)) {
-                            commonInterests++;
-                        }
-                        if (u2.getInterests().contains(interest)) {
-                            commonInterests++;
-                        }
-                    }
-                    return Integer.compare(commonInterests, 0);
-                })
-                .toList();
-        return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "recommend users", recommendedUsers.stream().map(userMapper::toFindDto)));
+        Supplier<Query> exclusionQuerySupplier = ElasticsearchUtils.createExclusionQuery(currentUserId, "id");
+
+        Supplier<Query> combinedQuerySupplier = () -> Query.of(q -> q.bool(b -> b
+                .must(interestQuerySupplier.get())
+                .mustNot(exclusionQuerySupplier.get())
+        ));
+
+        SearchRequest searchRequest = new SearchRequest.Builder()
+                .index("users_index")
+                .query(combinedQuerySupplier.get())
+                .from(page*size)
+                .size(size)
+                .sort(SortOptions.of(so -> so.field(f -> f.field("followersCount").order(SortOrder.Desc))))
+                .build();
+
+        SearchResponse<UserDocument> response = elasticsearchClient.search(searchRequest, UserDocument.class);
+        List<Hit<UserDocument>> hits = response.hits().hits();
+        List<UserDocument> userDocuments = hits.stream().map(Hit::source).collect(Collectors.toList());
+        return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "recommend users", userDocuments));
     }
 
     @Override
     public ResponseEntity<?> recommendUsersBasedOnEnglishLevel(Long currentUserId, int pageNumber, int pageSize) {
         EnglishLevel englishLevel = userRepository.findById(currentUserId)
                 .orElseThrow(() -> new NotFoundException("cant find the user")).getEnglishLevel();
-        Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by(Sort.Direction.DESC, "followersCount"));
-        Page<UserEntity> userEntities = userRepository.findUsersByEnglishLevelAndSortByFollowersCountDesc(englishLevel, pageable);
-        return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "get users by english level", userEntities.map(userMapper::toFindDto)));
+//        Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by(Sort.Direction.DESC, "followersCount"));
+//        Page<UserEntity> userEntities = userRepository.findUsersByEnglishLevelAndSortByFollowersCountDesc(englishLevel, pageable);
+//        return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "get users by english level", userEntities.map(userMapper::toFindDto)));
+
+        Supplier<Query> englishLevelQuerySupplier = () -> Query.of(q -> q.term(t -> t.field("englishLevel").value(englishLevel.getLevelName())));
+
+        Supplier<Query> exclusionQuerySupplier = ElasticsearchUtils.createExclusionQuery(currentUserId, "id");
+
+        Supplier<Query> combinedQuerySupplier = () -> Query.of(q -> q.bool(b -> b
+                .must(englishLevelQuerySupplier.get())
+                .mustNot(exclusionQuerySupplier.get())
+        ));
+
+        int from = pageNumber * pageSize;
+
+        SearchRequest searchRequest = new SearchRequest.Builder()
+                .index("users_index")
+                .query(combinedQuerySupplier.get())
+                .from(from)
+                .size(pageSize)
+                .sort(SortOptions.of(so -> so.field(f -> f.field("followersCount").order(SortOrder.Desc))))
+                .build();
+
+        SearchResponse<UserDocument> response = null;
+        try {
+            response = elasticsearchClient.search(searchRequest, UserDocument.class);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        List<Hit<UserDocument>> hits = response.hits().hits();
+        List<UserDocument> userDocuments = hits.stream().map(Hit::source).toList();
+        return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "recommend users based on english level", userDocuments));
     }
 }
