@@ -10,6 +10,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 public interface IDiscussionService {
     ResponseEntity<?> getDiscussion(Long id);
@@ -22,4 +24,5 @@ public interface IDiscussionService {
     Page<DiscussionDto> getDiscussionsByTopic(int pageNumber, int pageSize, DiscussionOrderBy sortBy, Long topicId);
     ResponseEntity<?> addTopic(DiscussionTopicPostDto dto);
     ResponseEntity<?> getAllTopics();
+    ResponseEntity<?> filterDiscussion(List<String> options, int pageNumber, int pageSize);
 }

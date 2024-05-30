@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.elasticsearch.annotations.Field;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -12,7 +13,9 @@ import lombok.Setter;
 @Setter
 public class DiscussionTopicDto {
     @JsonProperty("id")
+    @Field(name = "id")
     private Long id;
     @JsonProperty("name")
+    @Field(name = "name")
     private String name;
 }

@@ -14,6 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RestControllerAdvice
 @RequestMapping("${api.prefix}/discussions")
@@ -59,6 +61,12 @@ public class DiscussionController {
     @PreAuthorize("hasAuthority('LEARNER')")
     public ResponseEntity<?> getDiscussion(@PathVariable Long discussionId) {
         return discussionService.getDiscussion(discussionId);
+    }
+
+    @GetMapping("/filter-discussions")
+    @PreAuthorize("hasAuthority('LEARNER')")
+    public ResponseEntity<?> filterDiscussions(@RequestParam(defaultValue = "10") int pageSize, @RequestParam(defaultValue = "0") int pageNumber, @RequestParam List<String> options) {
+        return discussionService.filterDiscussion(options, pageNumber, pageSize);
     }
 
     @GetMapping("/{topicId}")

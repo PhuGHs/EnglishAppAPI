@@ -1,9 +1,7 @@
 package com.example.EnglishAppAPI.utils;
 
-import co.elastic.clients.elasticsearch._types.query_dsl.FuzzyQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.MatchQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
-
 import java.util.function.Supplier;
 
 public class ElasticsearchUtils {

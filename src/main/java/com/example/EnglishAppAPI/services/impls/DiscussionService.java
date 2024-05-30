@@ -1,5 +1,16 @@
 package com.example.EnglishAppAPI.services.impls;
 
+
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._types.FieldValue;
+import co.elastic.clients.elasticsearch._types.SortOptions;
+import co.elastic.clients.elasticsearch._types.SortOrder;
+import co.elastic.clients.elasticsearch._types.query_dsl.Query;
+import co.elastic.clients.elasticsearch._types.query_dsl.TermsQueryField;
+import co.elastic.clients.elasticsearch.core.SearchRequest;
+import co.elastic.clients.elasticsearch.core.SearchResponse;
+import co.elastic.clients.elasticsearch.core.search.Hit;
+import co.elastic.clients.util.ObjectBuilder;
 import com.example.EnglishAppAPI.entities.DiscussionTopic;
 import com.example.EnglishAppAPI.entities.indexes.DiscussionDocument;
 import com.example.EnglishAppAPI.mapstruct.dtos.*;
@@ -11,7 +22,6 @@ import com.example.EnglishAppAPI.mapstruct.enums.DiscussionOrderBy;
 import com.example.EnglishAppAPI.mapstruct.enums.NotificationType;
 import com.example.EnglishAppAPI.mapstruct.mappers.DiscussionMapper;
 import com.example.EnglishAppAPI.mapstruct.mappers.DiscussionTopicMapper;
-import com.example.EnglishAppAPI.mapstruct.mappers.EnglishTopicMapper;
 import com.example.EnglishAppAPI.mapstruct.mappers.UserMapper;
 import com.example.EnglishAppAPI.repositories.DiscussionTopicRepository;
 import com.example.EnglishAppAPI.repositories.elas.DiscussionDocumentRepository;
@@ -21,6 +31,9 @@ import com.example.EnglishAppAPI.repositories.DiscussionRepository;
 import com.example.EnglishAppAPI.repositories.EnglishTopicRepository;
 import com.example.EnglishAppAPI.repositories.UserRepository;
 import com.example.EnglishAppAPI.services.interfaces.IDiscussionService;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -31,8 +44,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.io.IOException;
 import java.util.*;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 @Service
 public class DiscussionService implements IDiscussionService {
@@ -46,9 +61,10 @@ public class DiscussionService implements IDiscussionService {
     private final UserMapper userMapper;
     private final DiscussionTopicMapper discussionTopicMapper;
     private final DiscussionTopicRepository discussionTopicRepository;
+    private final ElasticsearchClient elasticsearchClient;
 
     @Autowired
-    public DiscussionService(DiscussionRepository discussionRepository, UserRepository userRepository, EnglishTopicRepository englishTopicRepository, DiscussionMapper discussionMapper, DiscussionDocumentRepository discussionDocumentRepository, SimpMessagingTemplate simpMessagingTemplate, NotificationService notificationService, UserMapper userMapper, DiscussionTopicMapper discussionTopicMapper, DiscussionTopicRepository discussionTopicRepository) {
+    public DiscussionService(DiscussionRepository discussionRepository, UserRepository userRepository, EnglishTopicRepository englishTopicRepository, DiscussionMapper discussionMapper, DiscussionDocumentRepository discussionDocumentRepository, SimpMessagingTemplate simpMessagingTemplate, NotificationService notificationService, UserMapper userMapper, DiscussionTopicMapper discussionTopicMapper, DiscussionTopicRepository discussionTopicRepository, ElasticsearchClient elasticsearchClient) {
         this.discussionRepository = discussionRepository;
         this.userRepository = userRepository;
         this.englishTopicRepository = englishTopicRepository;
@@ -59,6 +75,7 @@ public class DiscussionService implements IDiscussionService {
         this.userMapper = userMapper;
         this.discussionTopicMapper = discussionTopicMapper;
         this.discussionTopicRepository = discussionTopicRepository;
+        this.elasticsearchClient = elasticsearchClient;
     }
 
     @Override
@@ -163,6 +180,34 @@ public class DiscussionService implements IDiscussionService {
         return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "get all topics", discussionTopics.stream().map(discussionTopicMapper::toDto)));
     }
 
+    @Override
+    public ResponseEntity<?> filterDiscussion(List<String> options, int pageNumber, int pageSize) {
+        Supplier<Query> boolQuery = () -> Query.of(q -> q.bool(b -> {
+            for (String option : options) {
+                b.should(s -> s.match(m -> m.field("topic.name").query(option)));
+            }
+            return b;
+        }));
+
+
+        SearchRequest searchRequest = new SearchRequest.Builder()
+                .index("discussion_index")
+                .query(boolQuery.get())
+                .from(pageNumber)
+                .size(pageSize)
+                .sort(SortOptions.of(so -> so.field(f -> f.field("created_date").order(SortOrder.Desc))))
+                .build();
+        SearchResponse<DiscussionDocument> response = null;
+        try {
+            response = elasticsearchClient.search(searchRequest, DiscussionDocument.class);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        List<Hit<DiscussionDocument>> hits = response.hits().hits();
+        List<DiscussionDocument> userDocuments = hits.stream().map(Hit::source).toList();
+        return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "filter", userDocuments));
+    }
+
     private void updateDocument(Discussion discussion) {
         Optional<DiscussionDocument> discussionDocument = discussionDocumentRepository.findById(discussion.getId());
         if (discussionDocument.isPresent()) {
@@ -170,9 +215,9 @@ public class DiscussionService implements IDiscussionService {
             discussionDoc.setTitle(discussion.getTitle());
             discussionDoc.setUser(userMapper.toElas(discussion.getUser()));
             discussionDoc.setTopic(discussionTopicMapper.toDto(discussion.getTopic()));
-            discussionDoc.setCreatedDate(discussion.getCreatedDate());
-            discussionDoc.setUpdatedDate(new Date());
-            discussionDoc.setNumberOfAnswers(discussion.getNumberOfAnswers());
+            discussionDoc.setCreated_date(discussion.getCreatedDate());
+            discussionDoc.setUpdated_date(new Date());
+            discussionDoc.setNumber_of_answers(discussion.getNumberOfAnswers());
         }
     }
 }

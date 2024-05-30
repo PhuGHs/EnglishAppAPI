@@ -122,9 +122,9 @@ public class AnswerService implements IAnswerService {
         if (discussionDocument.isPresent()) {
             DiscussionDocument discussionDoc = discussionDocument.get();
             discussionDoc.setTitle(discussion.getTitle());
-            discussionDoc.setCreatedDate(discussion.getCreatedDate());
-            discussionDoc.setUpdatedDate(new Date());
-            discussionDoc.setNumberOfAnswers(discussion.getNumberOfAnswers());
+            discussionDoc.setCreated_date(discussion.getCreatedDate());
+            discussionDoc.setUpdated_date(new Date());
+            discussionDoc.setNumber_of_answers(discussion.getNumberOfAnswers());
         }
         discussionRepository.save(discussion);
     }
