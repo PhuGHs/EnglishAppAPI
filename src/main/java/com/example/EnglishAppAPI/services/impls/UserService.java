@@ -1,5 +1,6 @@
 package com.example.EnglishAppAPI.services.impls;
 
+import com.example.EnglishAppAPI.entities.Interest;
 import com.example.EnglishAppAPI.entities.UserEntity;
 import com.example.EnglishAppAPI.entities.indexes.UserDocument;
 import com.example.EnglishAppAPI.exceptions.NotFoundException;
@@ -8,6 +9,7 @@ import com.example.EnglishAppAPI.mapstruct.dtos.NotificationPostDto;
 import com.example.EnglishAppAPI.mapstruct.dtos.UserInformationDto;
 import com.example.EnglishAppAPI.mapstruct.dtos.UserProfileDto;
 import com.example.EnglishAppAPI.mapstruct.enums.NotificationType;
+import com.example.EnglishAppAPI.mapstruct.mappers.InterestMapper;
 import com.example.EnglishAppAPI.mapstruct.mappers.UserMapper;
 import com.example.EnglishAppAPI.repositories.elas.UserDocumentRepository;
 import com.example.EnglishAppAPI.responses.ApiResponse;
@@ -25,10 +27,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class UserService implements IUserService {
@@ -38,15 +37,17 @@ public class UserService implements IUserService {
     private final UserMapper userMapper;
     private final UserDocumentRepository userDocumentRepository;
     private final SimpMessagingTemplate simpMessagingTemplate;
+    private final InterestMapper interestMapper;
 
     @Autowired
-    public UserService(UserRepository userRepository, CloudinaryService cloudinaryService, NotificationService notificationService, UserMapper userMapper, UserDocumentRepository userDocumentRepository, SimpMessagingTemplate simpMessagingTemplate) {
+    public UserService(UserRepository userRepository, CloudinaryService cloudinaryService, NotificationService notificationService, UserMapper userMapper, UserDocumentRepository userDocumentRepository, SimpMessagingTemplate simpMessagingTemplate, InterestMapper interestMapper) {
         this.userRepository = userRepository;
         this.cloudinaryService = cloudinaryService;
         this.notificationService = notificationService;
         this.userMapper = userMapper;
         this.userDocumentRepository = userDocumentRepository;
         this.simpMessagingTemplate = simpMessagingTemplate;
+        this.interestMapper = interestMapper;
     }
 
     @Override
@@ -173,7 +174,7 @@ public class UserService implements IUserService {
         return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "check if the followed user exists", status));
     }
 
-    private void updateUser(UserEntity user) {
+    public void updateUser(UserEntity user) {
         Optional<UserDocument> optionalUserDocument = userDocumentRepository.findById(user.getUserId());
         if (optionalUserDocument.isPresent()) {
             UserDocument userDocument = optionalUserDocument.get();
@@ -182,6 +183,7 @@ public class UserService implements IUserService {
             userDocument.setProfilePicture(user.getProfilePicture());
             userDocument.setFollowersCount(user.getFollowersCount());
             userDocument.setFollowingCount(user.getFollowingCount());
+            userDocument.setInterests(user.getInterests().stream().map(interestMapper::toDto).toList());
             userDocumentRepository.save(userDocument);
         }
     }

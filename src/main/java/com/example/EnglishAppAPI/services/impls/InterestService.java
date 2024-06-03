@@ -25,14 +25,21 @@ import java.util.Set;
 
 @Service
 public class InterestService implements IInterestService {
-    @Autowired
     private InterestRepository interestRepository;
-    @Autowired
     private UserRepository userRepository;
-    @Autowired
     private AccountRepository accountRepository;
-    @Autowired
     private InterestMapper interestMapper;
+    private UserService userService;
+
+    @Autowired
+    public InterestService(InterestRepository interestRepository, UserRepository userRepository, AccountRepository accountRepository, InterestMapper interestMapper, UserService userService) {
+        this.interestRepository = interestRepository;
+        this.userRepository = userRepository;
+        this.accountRepository = accountRepository;
+        this.interestMapper = interestMapper;
+        this.userService = userService;
+    }
+
     @Override
     public ResponseEntity<?> createNewInterest(InterestPostDto interestPostDto) {
         Interest interest = interestMapper.toEntity(interestPostDto);
@@ -61,7 +68,8 @@ public class InterestService implements IInterestService {
             selectedInterests.add(interest);
         }
         user.setInterests(selectedInterests);
-        userRepository.save(user);
+        user = userRepository.save(user);
+        userService.updateUser(user);
         accountRepository.save(account);
         return ResponseEntity.status(HttpStatus.OK).body("selected interests");
     }

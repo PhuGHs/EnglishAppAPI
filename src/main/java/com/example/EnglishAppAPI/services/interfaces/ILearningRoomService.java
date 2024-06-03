@@ -18,4 +18,5 @@ public interface ILearningRoomService {
     ResponseEntity<?> getLearningRooms(@Nullable LocalDateTime startDate, @Nullable LocalDateTime endDate, boolean isLive);
     ResponseEntity<?> endRoom(Long roomId, Long ownerId);
     ResponseEntity<?> sendMessages(LearningRoomMessagePostDto messagePostDto);
+    ResponseEntity<?> suggestRooms(Long currentUserId);
 }

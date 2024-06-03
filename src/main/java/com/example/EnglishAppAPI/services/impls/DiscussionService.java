@@ -31,6 +31,7 @@ import com.example.EnglishAppAPI.repositories.DiscussionRepository;
 import com.example.EnglishAppAPI.repositories.EnglishTopicRepository;
 import com.example.EnglishAppAPI.repositories.UserRepository;
 import com.example.EnglishAppAPI.services.interfaces.IDiscussionService;
+import com.example.EnglishAppAPI.utils.ElasticsearchUtils;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
@@ -89,7 +90,7 @@ public class DiscussionService implements IDiscussionService {
 
     @Override
     public ResponseEntity<ApiResponse> getTopDiscussions() {
-        List<Discussion> discussions = discussionRepository.findTop5ByOrderByCreatedDateDesc();
+        List<Discussion> discussions = discussionRepository.getPopularDiscussions();
         return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(ApiResponseStatus.SUCCESS, "Get top 5 sucessfully", discussions.stream().map(discussionMapper::toDto)));
     }
 
@@ -181,18 +182,28 @@ public class DiscussionService implements IDiscussionService {
     }
 
     @Override
-    public ResponseEntity<?> filterDiscussion(List<String> options, int pageNumber, int pageSize) {
-        Supplier<Query> boolQuery = () -> Query.of(q -> q.bool(b -> {
-            for (String option : options) {
-                b.should(s -> s.match(m -> m.field("topic.name").query(option)));
-            }
-            return b;
-        }));
-
+    public ResponseEntity<?> filterDiscussion(List<String> options, String searchTerms, int pageNumber, int pageSize) {
+        Supplier<Query> boolQuery;
+        if (options == null || options.isEmpty()) {
+            boolQuery = () -> Query.of(q -> q.matchAll(ma -> ma.queryName("{}")));
+        } else {
+            boolQuery = () -> Query.of(q -> q.bool(b -> {
+                for (String option : options) {
+                    b.should(s -> s.match(m -> m.field("topic.name").query(option)));
+                }
+                return b;
+            }));
+        }
+        Supplier<Query> combinedQuery = null;
+        if (searchTerms != null) {
+            System.out.println("not null");
+            Supplier<Query> matchPhraseQuery = () -> Query.of(q -> q.matchPhrase(mp -> mp.field("title").query(searchTerms)));
+            combinedQuery = () -> Query.of(q -> q.bool(b -> b.must(boolQuery.get()).must(matchPhraseQuery.get())));
+        }
 
         SearchRequest searchRequest = new SearchRequest.Builder()
                 .index("discussion_index")
-                .query(boolQuery.get())
+                .query(combinedQuery == null ? boolQuery.get() : combinedQuery.get())
                 .from(pageNumber)
                 .size(pageSize)
                 .sort(SortOptions.of(so -> so.field(f -> f.field("created_date").order(SortOrder.Desc))))
@@ -218,6 +229,8 @@ public class DiscussionService implements IDiscussionService {
             discussionDoc.setCreated_date(discussion.getCreatedDate());
             discussionDoc.setUpdated_date(new Date());
             discussionDoc.setNumber_of_answers(discussion.getNumberOfAnswers());
+
+            discussionDocumentRepository.save(discussionDoc);
         }
     }
 }

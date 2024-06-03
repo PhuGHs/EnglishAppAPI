@@ -60,8 +60,14 @@ public class LearningRoomController {
 
     @GetMapping("")
     @PreAuthorize("hasAuthority('LEARNER')")
-    public ResponseEntity<?> getLearningRoom(@RequestParam boolean isLive, @RequestParam LocalDateTime startDate, @RequestParam LocalDateTime endDate) {
+    public ResponseEntity<?> getLearningRoom(@RequestParam boolean isLive, @RequestParam(required = false) LocalDateTime startDate, @RequestParam(required = false) LocalDateTime endDate) {
         return learningRoomService.getLearningRooms(startDate, endDate, isLive);
+    }
+
+    @GetMapping("/suggest-rooms")
+    @PreAuthorize("hasAuthority('LEARNER')")
+    public ResponseEntity<?> suggestLearningRoom(@RequestParam Long currentUserId) {
+        return learningRoomService.suggestRooms(currentUserId);
     }
 
     @PutMapping("/end-room")

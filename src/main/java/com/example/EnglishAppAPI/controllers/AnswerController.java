@@ -21,8 +21,8 @@ public class AnswerController {
     @Autowired
     private AnswerService answerService;
 
-    @GetMapping("/get-by-discussion")
-    public Page<AnswerDto> getAllAnswers(@RequestParam Long discussionId, @RequestParam int pageNumber, @RequestParam int pageSize, @RequestParam(defaultValue = "createdAt") String sortBy) {
+    @GetMapping("/{discussionId}/get-by-discussion")
+    public Page<AnswerDto> getAllAnswers(@PathVariable Long discussionId, @RequestParam int pageNumber, @RequestParam int pageSize, @RequestParam(defaultValue = "createdAt") String sortBy) {
         return answerService.getAllAnswers(discussionId, pageNumber, pageSize, sortBy);
     }
 

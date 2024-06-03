@@ -6,6 +6,7 @@ import com.example.EnglishAppAPI.entities.UserEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -14,7 +15,8 @@ import java.util.List;
 public interface DiscussionRepository extends JpaRepository<Discussion, Long> {
     Page<Discussion> findAll( Pageable pageable);
     Page<Discussion> findByUser(UserEntity user, Pageable pageable);
-    List<Discussion> findTop5ByOrderByCreatedDateDesc();
+    @Query("SELECT d FROM Discussion d ORDER BY d.numberOfAnswers DESC LIMIT 10")
+    List<Discussion> getPopularDiscussions();
     Page<Discussion> findByTopic(EnglishTopic topic, Pageable pageable);
     @Override
     boolean existsById(Long aLong);

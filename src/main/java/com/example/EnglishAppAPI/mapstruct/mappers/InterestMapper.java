@@ -10,7 +10,7 @@ import org.mapstruct.Mapping;
 public interface InterestMapper {
     @Mapping(source = "name", target = "interestName")
     Interest toEntity(InterestPostDto interestPostDto);
-    @Mapping(source = "interestName", target="name")
-    @Mapping(source = "interestId", target = "id")
+    @Mapping(source = "interestName", target="interest_name")
+    @Mapping(source = "interestId", target = "interest_id")
     InterestDto toDto(Interest interest);
 }

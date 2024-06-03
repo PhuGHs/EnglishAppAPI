@@ -24,5 +24,5 @@ public interface IDiscussionService {
     Page<DiscussionDto> getDiscussionsByTopic(int pageNumber, int pageSize, DiscussionOrderBy sortBy, Long topicId);
     ResponseEntity<?> addTopic(DiscussionTopicPostDto dto);
     ResponseEntity<?> getAllTopics();
-    ResponseEntity<?> filterDiscussion(List<String> options, int pageNumber, int pageSize);
+    ResponseEntity<?> filterDiscussion(List<String> options, String searchTerms, int pageNumber, int pageSize);
 }

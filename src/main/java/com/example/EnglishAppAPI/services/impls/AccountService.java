@@ -13,6 +13,7 @@ import com.example.EnglishAppAPI.entities.UserEntity;
 import com.example.EnglishAppAPI.exceptions.NotFoundException;
 import com.example.EnglishAppAPI.exceptions.UnauthorizedException;
 import com.example.EnglishAppAPI.mapstruct.mappers.AccountMapper;
+import com.example.EnglishAppAPI.mapstruct.mappers.InterestMapper;
 import com.example.EnglishAppAPI.repositories.EnglishLevelRepository;
 import com.example.EnglishAppAPI.repositories.elas.UserDocumentRepository;
 import com.example.EnglishAppAPI.responses.ApiResponse;
@@ -52,11 +53,12 @@ public class AccountService implements IAccountService {
     private final CloudinaryService cloudinaryService;
     private final AccountMapper accountMapper;
     private final MissionService missionService;
+    private final InterestMapper interestMapper;
     @Autowired
     private EmailService emailService;
 
     @Autowired
-    public AccountService(AccountRepository accountRepository, RoleRepository roleRepository, UserRepository userRepository, UserDocumentRepository userDocumentRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtGenerator jwtGenerator, EnglishLevelRepository englishLevelRepository, CloudinaryService cloudinaryService, AccountMapper accountMapper, MissionService missionService) {
+    public AccountService(AccountRepository accountRepository, RoleRepository roleRepository, UserRepository userRepository, UserDocumentRepository userDocumentRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtGenerator jwtGenerator, EnglishLevelRepository englishLevelRepository, CloudinaryService cloudinaryService, AccountMapper accountMapper, MissionService missionService, InterestMapper interestMapper) {
         this.accountRepository = accountRepository;
         this.roleRepository = roleRepository;
         this.userRepository = userRepository;
@@ -68,6 +70,7 @@ public class AccountService implements IAccountService {
         this.cloudinaryService = cloudinaryService;
         this.accountMapper = accountMapper;
         this.missionService = missionService;
+        this.interestMapper = interestMapper;
     }
 
     @Override
@@ -92,7 +95,7 @@ public class AccountService implements IAccountService {
         String fileUrl = String.format("https://res.cloudinary.com/daszajz9a/image/upload/v%s/%s", result.get("version"), result.get("public_id"));
         user.setProfilePicture(fileUrl);
         user = userRepository.save(user);
-        userDocumentRepository.save(UserDocument.fromUserEntity(user));
+        userDocumentRepository.save(UserDocument.fromUserEntity(user, user.getInterests().stream().map(interestMapper::toDto).toList()));
         Account account = new Account(registerDto.getEmail(), passwordEncoder.encode(registerDto.getPassword()));
         Role role = roleRepository.findByRoleName(Role.LEARNER).orElseThrow(() -> new NotFoundException("cannot find the role"));
         account.setRole(role);

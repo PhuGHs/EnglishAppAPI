@@ -51,9 +51,9 @@ public class DiscussionController {
         return discussionService.getUserDiscussions(pageNumber, pageSize, sortBy, userId);
     }
 
-    @GetMapping("/{userId}/popular-discussions")
+    @GetMapping("/popular-discussions")
     @PreAuthorize("hasAuthority('LEARNER')")
-    public ResponseEntity<ApiResponse> getTopDiscussions(@PathVariable Long userId) {
+    public ResponseEntity<ApiResponse> getTopDiscussions() {
         return discussionService.getTopDiscussions();
     }
 
@@ -65,8 +65,8 @@ public class DiscussionController {
 
     @GetMapping("/filter-discussions")
     @PreAuthorize("hasAuthority('LEARNER')")
-    public ResponseEntity<?> filterDiscussions(@RequestParam(defaultValue = "10") int pageSize, @RequestParam(defaultValue = "0") int pageNumber, @RequestParam List<String> options) {
-        return discussionService.filterDiscussion(options, pageNumber, pageSize);
+    public ResponseEntity<?> filterDiscussions(@RequestParam(defaultValue = "10") int pageSize, @RequestParam(required = false) String searchTerms, @RequestParam(defaultValue = "0") int pageNumber, @RequestParam(required = false) List<String> options) {
+        return discussionService.filterDiscussion(options, searchTerms, pageNumber, pageSize);
     }
 
     @GetMapping("/{topicId}")

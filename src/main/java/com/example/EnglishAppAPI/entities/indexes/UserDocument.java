@@ -1,23 +1,23 @@
 package com.example.EnglishAppAPI.entities.indexes;
 
-import com.example.EnglishAppAPI.entities.EnglishLevel;
-import com.example.EnglishAppAPI.entities.Interest;
 import com.example.EnglishAppAPI.entities.UserEntity;
+import com.example.EnglishAppAPI.mapstruct.dtos.InterestDto;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
-
-import java.util.Set;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Document(indexName = "users_index", createIndex = true)
+@Document(indexName = "user_index", createIndex = true)
 @JsonIgnoreProperties(ignoreUnknown = true)
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "_class")
 public class UserDocument {
     private Long id;
     @Field(name = "fullName", type = FieldType.Text)
@@ -34,10 +34,12 @@ public class UserDocument {
     private int followersCount = 0;
     @Field(name = "englishLevel", type = FieldType.Text)
     private String englishLevel;
-    @Field(name = "interests", type = FieldType.Nested)
-    private Set<Interest> interests;
+    @Field(name = "interests")
+    private List<InterestDto> interests;
 
-    public static UserDocument fromUserEntity(UserEntity userEntity) {
+    private transient long sharedInterestCount;
+
+    public static UserDocument fromUserEntity(UserEntity userEntity, List<InterestDto> interests) {
         UserDocument userDocument = new UserDocument();
         userDocument.id = userEntity.getUserId();
         userDocument.fullName = userEntity.getFullName();
@@ -47,7 +49,7 @@ public class UserDocument {
         userDocument.followingCount = userEntity.getFollowingCount();
         userDocument.followersCount = userEntity.getFollowersCount();
         userDocument.englishLevel = userEntity.getEnglishLevel().getLevelName();
-        userDocument.interests = userEntity.getInterests();
+        userDocument.interests = interests;
         return userDocument;
     }
 }

@@ -57,7 +57,7 @@ public class AnswerService implements IAnswerService {
     @Override
     public Page<AnswerDto> getAllAnswers(Long discussionId, int pageNumber, int pageSize, String sortBy) {
         Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by(sortBy).descending());
-        Page<Answer> answersPage = answerRepository.findAll(pageable);
+        Page<Answer> answersPage = answerRepository.findByQuestion(discussionId, pageable);
         return answersPage.map(mapper::toDto);
     }
 
@@ -88,7 +88,7 @@ public class AnswerService implements IAnswerService {
         discussion = discussionRepository.save(discussion);
         updateDocument(discussion);
         NotificationDto notification = notificationService.addNotification(new NotificationPostDto(answerDto.getUserId(), discussion.getUser().getUserId(), user.getFullName() + "commented on your discussion", false, NotificationType.answer ,answer1.getAnswerId(), discussion.getId()));
-        simpMessagingTemplate.convertAndSend("/user/"+ notification.getReceiver().getUserId(), notification);
+        simpMessagingTemplate.convertAndSend("topic/user/notification/" + discussion.getUser().getUserId(), notification);
         return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(ApiResponseStatus.SUCCESS, "Answered the discussion successfully", answerGetDto));
     }
 
@@ -125,7 +125,8 @@ public class AnswerService implements IAnswerService {
             discussionDoc.setCreated_date(discussion.getCreatedDate());
             discussionDoc.setUpdated_date(new Date());
             discussionDoc.setNumber_of_answers(discussion.getNumberOfAnswers());
+
+            discussionDocumentRepository.save(discussionDoc);
         }
-        discussionRepository.save(discussion);
     }
 }

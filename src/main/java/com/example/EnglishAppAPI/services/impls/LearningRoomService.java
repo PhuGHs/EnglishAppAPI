@@ -229,4 +229,12 @@ public class LearningRoomService implements ILearningRoomService {
         simpMessagingTemplate.convertAndSend("/topic/learning-room/message/" + roomId, learningRoomMapper.toMessageDto(message));
         return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "message sent", learningRoomMapper.toMessageDto(message)));
     }
+
+    @Override
+    public ResponseEntity<?> suggestRooms(Long currentUserId) {
+        EnglishLevel englishLevel = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new NotFoundException("user not found")).getEnglishLevel();
+        List<LearningRoom> learningRooms = learningRoomRepository.suggestRooms(englishLevel.getLevelId());
+        return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "get rooms", learningRooms.stream().map(learningRoomMapper::toDto)));
+    }
 }
