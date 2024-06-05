@@ -57,6 +57,10 @@ public class LearningRoom {
     @OneToMany(mappedBy = "learningRoom", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<LearningRoomMessage> messages = new HashSet<>();
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private UserEntity owner;
+
     @ManyToOne
     @JoinColumn(name = "topic_id")
     private EnglishTopic topic;

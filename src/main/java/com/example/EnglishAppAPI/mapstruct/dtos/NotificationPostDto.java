@@ -22,6 +22,7 @@ public class NotificationPostDto {
     private String message;
     @JsonProperty("is_read")
     private boolean isRead = false;
+    @JsonProperty("type")
     private NotificationType type;
     @JsonProperty("created_item_id")
     private Long createdItemId;

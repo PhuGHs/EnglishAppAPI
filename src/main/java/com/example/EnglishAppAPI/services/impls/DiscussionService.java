@@ -120,7 +120,7 @@ public class DiscussionService implements IDiscussionService {
         discussionDocumentRepository.save(DiscussionDocument.fromEntity(discussion, userMapper.toElas(discussion.getUser()), discussionTopicMapper.toDto(discussion.getTopic())));
 
         for (UserEntity us : user.getFollowers()) {
-            NotificationDto notificationDto = notificationService.addNotification(new NotificationPostDto(user.getUserId(), us.getUserId(), user.getFullName() + " the one you are following, created a new discussion!", false, NotificationType.discussion ,discussion.getId(), discussion.getId()));
+            NotificationDto notificationDto = notificationService.addNotification(new NotificationPostDto(user.getUserId(), us.getUserId(), user.getFullName() + " the one you are following, created a new discussion!", false, NotificationType.DISCUSSION ,discussion.getId(), discussion.getId()));
             simpMessagingTemplate.convertAndSend("topic/user/notification/" + us.getUserId(), notificationDto);
         }
         return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(ApiResponseStatus.SUCCESS, "Created a new discussion", discussionMapper.toDto(discussion)));

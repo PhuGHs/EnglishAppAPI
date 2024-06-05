@@ -3,6 +3,7 @@ package com.example.EnglishAppAPI.services.impls;
 import com.example.EnglishAppAPI.entities.*;
 import com.example.EnglishAppAPI.exceptions.NotFoundException;
 import com.example.EnglishAppAPI.mapstruct.dtos.*;
+import com.example.EnglishAppAPI.mapstruct.enums.NotificationType;
 import com.example.EnglishAppAPI.mapstruct.mappers.LearningRoomMapper;
 import com.example.EnglishAppAPI.mapstruct.mappers.ParticipantMapper;
 import com.example.EnglishAppAPI.repositories.*;
@@ -33,9 +34,12 @@ public class LearningRoomService implements ILearningRoomService {
     private final ParticipantMapper participantMapper;
     private final TaskScheduler taskScheduler;
     private final LearningRoomMessageRepository learningRoomMessageRepository;
-    private SimpMessagingTemplate simpMessagingTemplate;
+    private final SimpMessagingTemplate simpMessagingTemplate;
+    private final NotificationService notificationService;
+    private final EmailService emailService;
+    private final AccountRepository accountRepository;
     @Autowired
-    public LearningRoomService(ParticipantRepository participantRepository, LearningRoomRepository learningRoomRepository, UserRepository userRepository, EnglishTopicRepository englishTopicRepository, LearningRoomMapper learningRoomMapper, ParticipantMapper participantMapper, TaskScheduler taskScheduler, LearningRoomMessageRepository learningRoomMessageRepository) {
+    public LearningRoomService(ParticipantRepository participantRepository, LearningRoomRepository learningRoomRepository, UserRepository userRepository, EnglishTopicRepository englishTopicRepository, LearningRoomMapper learningRoomMapper, ParticipantMapper participantMapper, TaskScheduler taskScheduler, LearningRoomMessageRepository learningRoomMessageRepository, SimpMessagingTemplate simpMessagingTemplate, NotificationService notificationService, EmailService emailService, AccountRepository accountRepository) {
         this.participantRepository = participantRepository;
         this.learningRoomRepository = learningRoomRepository;
         this.userRepository = userRepository;
@@ -44,6 +48,10 @@ public class LearningRoomService implements ILearningRoomService {
         this.participantMapper = participantMapper;
         this.taskScheduler = taskScheduler;
         this.learningRoomMessageRepository = learningRoomMessageRepository;
+        this.simpMessagingTemplate = simpMessagingTemplate;
+        this.notificationService = notificationService;
+        this.emailService = emailService;
+        this.accountRepository = accountRepository;
     }
 
     @Override
@@ -61,6 +69,7 @@ public class LearningRoomService implements ILearningRoomService {
                 .isLive(true)
                 .isPrivate(learningRoomPostDto.isPrivate())
                 .password(learningRoomPostDto.getPassword())
+                .owner(owner)
                 .topic(topic)
                 .build();
 
@@ -75,7 +84,25 @@ public class LearningRoomService implements ILearningRoomService {
         ps.add(ownerParticipant);
         learningRoom.setParticipants(ps);
         learningRoom = learningRoomRepository.save(learningRoom);
+        Long roomId = learningRoom.getId();
 
+        for (UserEntity us : owner.getFollowers()) {
+            NotificationDto notificationDto = notificationService.addNotification(new NotificationPostDto(owner.getUserId(), us.getUserId(), owner.getFullName() + " the one you are following, created a learning room! Come join with him", false, NotificationType.LEARNINGROOM , roomId, roomId));
+            simpMessagingTemplate.convertAndSend("topic/user/notification/" + us.getUserId(), notificationDto);
+        }
+
+        //handle duration
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(learningRoom.getCreatedAt());
+        calendar.add(Calendar.HOUR, learningRoomPostDto.getDuration());
+        Instant endedInstant = calendar.getTime().toInstant();
+        taskScheduler.schedule(() -> {
+            LearningRoom learningRoom1 = learningRoomRepository.findById(roomId)
+                            .orElseThrow(() -> new NotFoundException("Can't find the room"));
+            learningRoom1.setLive(false);
+            learningRoomRepository.save(learningRoom1);
+            simpMessagingTemplate.convertAndSend("topic/learning-room/" + roomId, new WebsocketType<>("end", "room time has exceeded the duration"));
+        }, endedInstant);
         return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "created learning room instantly", learningRoomMapper.toDto(learningRoom)));
     }
 
@@ -96,28 +123,36 @@ public class LearningRoomService implements ILearningRoomService {
                 .password(learningRoomPostLaterDto.getPassword())
                 .isPrivate(learningRoomPostLaterDto.isPrivate())
                 .topic(topic)
+                .owner(owner)
                 .build();
 
-        Participant ownerParticipant = Participant.builder()
-                .room(learningRoom)
-                .user(owner)
-                .joinTime(new Date())
-                .isOwner(true)
-                .isSpeaker(true)
-                .build();
-        Set<Participant> ps = new HashSet<>();
-        ps.add(ownerParticipant);
-        learningRoom.setParticipants(ps);
+        //schedule to notify user
         Date scheduledTo = learningRoomPostLaterDto.getScheduledTo();
         Instant scheduledInstant = scheduledTo.toInstant();
-        taskScheduler.schedule(this::sendMessageWhenItComes, scheduledInstant);
+        Long roomId = learningRoom.getId();
+        String email = accountRepository.findByUserId(owner.getUserId()).getEmail();
+        taskScheduler.schedule(() -> {
+            emailService.sendEmail(email, "Notify about the learning room you scheduled before", "Recently, you have scheduled a learning room, so it is the time right now, come to host the room!");
+            NotificationDto notificationDto = notificationService.addNotification(new NotificationPostDto(owner.getUserId(), owner.getUserId(), "You have recently scheduled a learning room, so it is the time right now, come to host the room!", false, NotificationType.LEARNINGROOM , roomId, roomId));
+            simpMessagingTemplate.convertAndSend("topic/user/notification/" + owner.getUserId(), notificationDto);
+        }, scheduledInstant);
+
+
+        //schedule to notify room has ended
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(learningRoom.getCreatedAt());
+        calendar.add(Calendar.HOUR, learningRoomPostLaterDto.getDuration());
+        Instant endedInstant = calendar.getTime().toInstant();
+        taskScheduler.schedule(() -> {
+            LearningRoom learningRoom1 = learningRoomRepository.findById(roomId)
+                    .orElseThrow(() -> new NotFoundException("Can't find the room"));
+            learningRoom1.setLive(false);
+            learningRoomRepository.save(learningRoom1);
+            simpMessagingTemplate.convertAndSend("topic/learning-room/" + roomId, new WebsocketType<>("end", "room time has exceeded the duration"));
+        }, endedInstant);
         learningRoom = learningRoomRepository.save(learningRoom);
 
         return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "created learning room later", learningRoomMapper.toDto(learningRoom)));
-    }
-
-    private void sendMessageWhenItComes(){
-        //send to client who created the room
     }
 
     @Override
@@ -129,24 +164,27 @@ public class LearningRoomService implements ILearningRoomService {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("user not found"));
         if (participantRepository.checkIfExistedInAnotherRoom(userId, roomId)) {
-            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(new ApiResponse(ApiResponseStatus.FAIL, "you are not able to join multiple room ats once", ""));
+            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(new ApiResponse(ApiResponseStatus.FAIL, "you are not able to join multiple room at once", ""));
         }
-        if (learningRoom.isPrivate() && Objects.equals(learningRoom.getPassword(), joinLearningRoom.getPassword())) {
-            if (learningRoom.getTopic().getEnglishLevel().getLevelId() > user.getEnglishLevel().getLevelId()) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ApiResponse(ApiResponseStatus.FAIL, "your level is not suitable for this room", "level"));
+        if (learningRoom.getTopic().getEnglishLevel().getLevelId() > user.getEnglishLevel().getLevelId()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ApiResponse(ApiResponseStatus.FAIL, "your level is not suitable for this room", "level"));
+        }
+        if (learningRoom.isPrivate()) {
+            if (!Objects.equals(learningRoom.getPassword(), joinLearningRoom.getPassword())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ApiResponse(ApiResponseStatus.FAIL, "password is not correct", "password"));
             }
-            Participant participant = Participant.builder()
-                    .joinTime(new Date())
-                    .room(learningRoom)
-                    .user(user)
-                    .isSpeaker(false)
-                    .isOwner(false)
-                    .build();
-            learningRoom.getParticipants().add(participant);
-            learningRoom = learningRoomRepository.save(learningRoom);
-            return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "joined the room", learningRoomMapper.toDto(learningRoom)));
         }
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ApiResponse(ApiResponseStatus.FAIL, "password is not correct", "password"));
+        Participant participant = Participant.builder()
+                .joinTime(new Date())
+                .room(learningRoom)
+                .user(user)
+                .isSpeaker(false)
+                .isOwner(false)
+                .build();
+        learningRoom.getParticipants().add(participant);
+        learningRoom = learningRoomRepository.save(learningRoom);
+        simpMessagingTemplate.convertAndSend("/topic/learning-room/" + roomId, new WebsocketType<>("join", participantMapper.toDto(participant)));
+        return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "joined the room", learningRoomMapper.toDto(learningRoom)));
     }
 
     @Override
@@ -154,6 +192,7 @@ public class LearningRoomService implements ILearningRoomService {
         Participant participant = participantRepository.findById(participantId)
                 .orElseThrow(() -> new NotFoundException("participant not found"));
         //send to client
+        simpMessagingTemplate.convertAndSend("/topic/learning-room/" + participant.getRoom().getId(), new WebsocketType<>("kick", participantMapper.toDto(participant)));
         participantRepository.delete(participant);
         return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "kick participant", ""));
     }
@@ -166,7 +205,8 @@ public class LearningRoomService implements ILearningRoomService {
                 .orElseThrow(() -> new NotFoundException("owner not found"));
         participant.setOwner(true);
         owner.setOwner(false);
-        participantRepository.save(participant);
+        participant = participantRepository.save(participant);
+        simpMessagingTemplate.convertAndSend("/topic/learning-room/" + participant.getRoom().getId(), new WebsocketType<>("promote", participantMapper.toDto(participant)));
         participantRepository.save(owner);
         return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "promoted the participant to owner", ""));
     }
@@ -185,13 +225,13 @@ public class LearningRoomService implements ILearningRoomService {
     }
 
     @Override
-    public ResponseEntity<?> getLearningRooms(@Nullable LocalDateTime startDate, @Nullable LocalDateTime endDate, boolean isLive) {
+    public ResponseEntity<?> getLearningRooms(boolean isLive) {
         List<LearningRoom> learningRooms = null;
         if (isLive) {
             learningRooms = learningRoomRepository.getLiveLearningRoom();
             return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "get live room", learningRooms.stream().map(learningRoomMapper::toDto)));
         }
-        learningRooms = learningRoomRepository.getLearningRoomBetween(startDate, endDate);
+        learningRooms = learningRoomRepository.getScheduleRooms();
         return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "get room between", learningRooms.stream().map(learningRoomMapper::toDto)));
     }
 
@@ -236,5 +276,30 @@ public class LearningRoomService implements ILearningRoomService {
                 .orElseThrow(() -> new NotFoundException("user not found")).getEnglishLevel();
         List<LearningRoom> learningRooms = learningRoomRepository.suggestRooms(englishLevel.getLevelId());
         return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "get rooms", learningRooms.stream().map(learningRoomMapper::toDto)));
+    }
+
+    @Override
+    public ResponseEntity<?> leaveRoom(Long roomId, Long participantId) {
+        Participant participant = participantRepository.findById(participantId)
+                .orElseThrow(() -> new NotFoundException("participant not found"));
+        LearningRoom room = learningRoomRepository.findById(roomId)
+                .orElseThrow(() -> new NotFoundException("room not found"));
+        if (room.getParticipants().size() <= 1) {
+            room.setLive(false);
+            room.getParticipants().remove(participant);
+            learningRoomRepository.save(room);
+            return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "leave room", ""));
+        }
+        if (participant.isOwner()) {
+            Optional<Participant> optionalParticipant = room.getParticipants().stream().findFirst();
+            Participant x = optionalParticipant.get();
+            x.setOwner(true);
+            x = participantRepository.save(x);
+            simpMessagingTemplate.convertAndSend("/topic/learning-room/" + roomId, participantMapper.toDto(x));
+        } else {
+            simpMessagingTemplate.convertAndSend("/topic/learning-room/" + roomId, participantMapper.toDto(participant));
+        }
+        room.getParticipants().remove(participant);
+        return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "leave room", ""));
     }
 }

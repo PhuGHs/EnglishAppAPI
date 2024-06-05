@@ -87,7 +87,7 @@ public class AnswerService implements IAnswerService {
         AnswerDto answerGetDto = mapper.toDto(answer1);
         discussion = discussionRepository.save(discussion);
         updateDocument(discussion);
-        NotificationDto notification = notificationService.addNotification(new NotificationPostDto(answerDto.getUserId(), discussion.getUser().getUserId(), user.getFullName() + "commented on your discussion", false, NotificationType.answer ,answer1.getAnswerId(), discussion.getId()));
+        NotificationDto notification = notificationService.addNotification(new NotificationPostDto(answerDto.getUserId(), discussion.getUser().getUserId(), user.getFullName() + "commented on your discussion", false, NotificationType.ANSWER ,answer1.getAnswerId(), discussion.getId()));
         simpMessagingTemplate.convertAndSend("topic/user/notification/" + discussion.getUser().getUserId(), notification);
         return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(ApiResponseStatus.SUCCESS, "Answered the discussion successfully", answerGetDto));
     }

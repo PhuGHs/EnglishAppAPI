@@ -60,8 +60,8 @@ public class LearningRoomController {
 
     @GetMapping("")
     @PreAuthorize("hasAuthority('LEARNER')")
-    public ResponseEntity<?> getLearningRoom(@RequestParam boolean isLive, @RequestParam(required = false) LocalDateTime startDate, @RequestParam(required = false) LocalDateTime endDate) {
-        return learningRoomService.getLearningRooms(startDate, endDate, isLive);
+    public ResponseEntity<?> getLearningRoom(@RequestParam boolean isLive) {
+        return learningRoomService.getLearningRooms(isLive);
     }
 
     @GetMapping("/suggest-rooms")
@@ -74,6 +74,12 @@ public class LearningRoomController {
     @PreAuthorize("hasAuthority('LEARNER')")
     public ResponseEntity<?> endRoom(@RequestBody @Valid JoinLearningRoomDto joinLearningRoomDto) {
         return learningRoomService.endRoom(joinLearningRoomDto.getRoomId(), joinLearningRoomDto.getUserId());
+    }
+
+    @PutMapping("/leave-room")
+    @PreAuthorize("hasAuthority('LEARNER')")
+    public ResponseEntity<?> leaveRoom(@RequestBody @Valid LeaveRoomDTO leaveRoomDTO) {
+        return learningRoomService.leaveRoom(leaveRoomDTO.getRoomId(), leaveRoomDTO.getParticipantId());
     }
 
     @PostMapping("/send-messages")

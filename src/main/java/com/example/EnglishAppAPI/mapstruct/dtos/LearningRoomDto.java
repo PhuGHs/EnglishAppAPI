@@ -38,4 +38,6 @@ public class LearningRoomDto {
     private EnglishTopicDto topic;
     @JsonProperty("participants")
     private Set<ParticipantDto> participants;
+    @JsonProperty("owner")
+    private UserNecessaryDto owner;
 }

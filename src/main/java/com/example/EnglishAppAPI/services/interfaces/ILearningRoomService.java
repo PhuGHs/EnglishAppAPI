@@ -15,8 +15,9 @@ public interface ILearningRoomService {
     ResponseEntity<?> kickParticipant(Long participantId);
     ResponseEntity<?> promoteParticipantToOwner(Long participantId, Long ownerParticipantId);
     ResponseEntity<?> getParticipants(Long roomId, boolean isSpeaker);
-    ResponseEntity<?> getLearningRooms(@Nullable LocalDateTime startDate, @Nullable LocalDateTime endDate, boolean isLive);
+    ResponseEntity<?> getLearningRooms(boolean isLive);
     ResponseEntity<?> endRoom(Long roomId, Long ownerId);
     ResponseEntity<?> sendMessages(LearningRoomMessagePostDto messagePostDto);
     ResponseEntity<?> suggestRooms(Long currentUserId);
+    ResponseEntity<?> leaveRoom(Long roomId, Long participantId);
 }

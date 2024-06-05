@@ -10,9 +10,11 @@ import org.mapstruct.Mapping;
 public interface NotificationMapper {
     @Mapping(source = "sender", target = "sender")
     @Mapping(source = "receiver", target = "receiver")
+    @Mapping(source = "type", target = "type")
     NotificationDto toDto(Notification notification);
 
     @Mapping(source = "senderId", target = "sender.userId")
     @Mapping(source = "receiverId", target = "receiver.userId")
+    @Mapping(source = "type", target = "type")
     Notification toEntity(NotificationPostDto notificationPostDto);
 }

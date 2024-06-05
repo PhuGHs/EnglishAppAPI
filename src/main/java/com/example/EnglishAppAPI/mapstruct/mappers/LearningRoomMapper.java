@@ -14,6 +14,7 @@ import org.mapstruct.Mapping;
 public interface LearningRoomMapper {
     @Mapping(source = "participants", target = "participants")
     @Mapping(source = "topic", target = "topic")
+    @Mapping(source = "owner", target = "owner")
     LearningRoomDto toDto(LearningRoom learningRoom);
 
     @Mapping(source = "roomId", target = "learningRoom.id")

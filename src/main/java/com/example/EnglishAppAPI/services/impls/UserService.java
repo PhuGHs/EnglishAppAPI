@@ -83,7 +83,7 @@ public class UserService implements IUserService {
         updateUser(user);
 
         if (isFollowFeature) {
-            NotificationDto notificationDto = notificationService.addNotification(new NotificationPostDto(currentUserId, id, user.getFullName() + "is following you now", false, NotificationType.follow ,currentUserId, currentUserId));
+            NotificationDto notificationDto = notificationService.addNotification(new NotificationPostDto(currentUserId, id, user.getFullName() + " is following you now", false, NotificationType.FOLLOW ,currentUserId, currentUserId));
             simpMessagingTemplate.convertAndSend("topic/user/notification/" + followedUser.getUserId(), notificationDto);
         }
         return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(ApiResponseStatus.SUCCESS, isFollowFeature ? "follow user" : "unfollow user", ""));

@@ -1,6 +1,7 @@
 package com.example.EnglishAppAPI.services.impls;
 
 import com.example.EnglishAppAPI.entities.Notification;
+import com.example.EnglishAppAPI.entities.UserEntity;
 import com.example.EnglishAppAPI.exceptions.NotFoundException;
 import com.example.EnglishAppAPI.mapstruct.dtos.NotificationDto;
 import com.example.EnglishAppAPI.mapstruct.dtos.NotificationPostDto;
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -62,7 +64,20 @@ public class NotificationService implements INotificationService {
 
     @Override
     public NotificationDto addNotification(NotificationPostDto notificationPostDto) {
-        Notification notification = notificationMapper.toEntity(notificationPostDto);
+        UserEntity sender = userRepository.findById(notificationPostDto.getSenderId())
+                .orElseThrow(() -> new NotFoundException("Cant find the sender"));
+        UserEntity receiver = userRepository.findById(notificationPostDto.getReceiverId())
+                .orElseThrow(() -> new NotFoundException("Cant find the sender"));
+        Notification notification = Notification.builder()
+                .sender(sender)
+                .receiver(receiver)
+                .type(notificationPostDto.getType())
+                .createdAt(new Date())
+                .isRead(false)
+                .createdItemId(notificationPostDto.getCreatedItemId())
+                .entityItemId(notificationPostDto.getEntityItemId())
+                .message(notificationPostDto.getMessage())
+                .build();
         notification = notificationRepository.save(notification);
         //send to client
         return notificationMapper.toDto(notification);
