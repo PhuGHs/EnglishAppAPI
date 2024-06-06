@@ -72,8 +72,14 @@ public class LearningRoomController {
 
     @PutMapping("/end-room")
     @PreAuthorize("hasAuthority('LEARNER')")
-    public ResponseEntity<?> endRoom(@RequestBody @Valid JoinLearningRoomDto joinLearningRoomDto) {
+    public ResponseEntity<?> toggleSpeaker(@RequestBody @Valid JoinLearningRoomDto joinLearningRoomDto) {
         return learningRoomService.endRoom(joinLearningRoomDto.getRoomId(), joinLearningRoomDto.getUserId());
+    }
+
+    @PutMapping("/toggle-speaker")
+    @PreAuthorize("hasAuthority('LEARNER')")
+    public ResponseEntity<?> endRoom(@RequestBody @Valid ToggleSpeakerDto toggleSpeakerDto) {
+        return learningRoomService.toggleSpeaker(toggleSpeakerDto.getParticipantId());
     }
 
     @PutMapping("/leave-room")

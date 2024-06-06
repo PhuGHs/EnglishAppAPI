@@ -20,4 +20,5 @@ public interface ILearningRoomService {
     ResponseEntity<?> sendMessages(LearningRoomMessagePostDto messagePostDto);
     ResponseEntity<?> suggestRooms(Long currentUserId);
     ResponseEntity<?> leaveRoom(Long roomId, Long participantId);
+    ResponseEntity<?> toggleSpeaker(Long participantId);
 }

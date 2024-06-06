@@ -207,8 +207,9 @@ public class LearningRoomService implements ILearningRoomService {
         owner.setOwner(false);
         participant = participantRepository.save(participant);
         simpMessagingTemplate.convertAndSend("/topic/learning-room/" + participant.getRoom().getId(), new WebsocketType<>("promote", participantMapper.toDto(participant)));
+        simpMessagingTemplate.convertAndSend("/topic/learning-room/" + participant.getRoom().getId(), new WebsocketType<>("promote", participantMapper.toDto(owner)));
         participantRepository.save(owner);
-        return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "promoted the participant to owner", ""));
+        return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "promoted the participant to owner", participantMapper.toDto(participant)));
     }
 
     @Override
@@ -286,8 +287,8 @@ public class LearningRoomService implements ILearningRoomService {
                 .orElseThrow(() -> new NotFoundException("room not found"));
         if (room.getParticipants().size() <= 1) {
             room.setLive(false);
-            room.getParticipants().remove(participant);
             learningRoomRepository.save(room);
+            participantRepository.deleteAParticipant(participantId);
             return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "leave room", ""));
         }
         if (participant.isOwner()) {
@@ -295,11 +296,22 @@ public class LearningRoomService implements ILearningRoomService {
             Participant x = optionalParticipant.get();
             x.setOwner(true);
             x = participantRepository.save(x);
-            simpMessagingTemplate.convertAndSend("/topic/learning-room/" + roomId, participantMapper.toDto(x));
+            simpMessagingTemplate.convertAndSend("/topic/learning-room/" + roomId, new WebsocketType<>("leave", participantMapper.toDto(x)));
         } else {
-            simpMessagingTemplate.convertAndSend("/topic/learning-room/" + roomId, participantMapper.toDto(participant));
+            simpMessagingTemplate.convertAndSend("/topic/learning-room/" + roomId, new WebsocketType<>("leave", participantMapper.toDto(participant)));
         }
-        room.getParticipants().remove(participant);
+        participantRepository.deleteAParticipant(participantId);
         return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "leave room", ""));
+    }
+
+    @Override
+    public ResponseEntity<?> toggleSpeaker(Long participantId) {
+        Participant participant = participantRepository.findById(participantId)
+                .orElseThrow(() -> new NotFoundException("cant find the participant"));
+        participant.setSpeaker(!participant.isSpeaker());
+        participant = participantRepository.save(participant);
+        Long roomId = participant.getRoom().getId();
+        simpMessagingTemplate.convertAndSend("/topic/learning-room/" + roomId, new WebsocketType<>("toggle", participantMapper.toDto(participant)));
+        return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "Toggle", participantMapper.toDto(participant)));
     }
 }
