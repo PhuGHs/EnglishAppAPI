@@ -15,7 +15,7 @@ import java.util.Date;
 public class LearningRoomMessageDto {
     @JsonProperty("learning_room_message_id")
     private Long id;
-    @JsonProperty("learing_room_id")
+    @JsonProperty("learning_room_id")
     private Long roomId;
     @JsonProperty("user")
     private UserNecessaryDto user;

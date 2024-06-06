@@ -256,19 +256,28 @@ public class LearningRoomService implements ILearningRoomService {
     public ResponseEntity<?> sendMessages(LearningRoomMessagePostDto messagePostDto) {
         Long userId = messagePostDto.getUserId();
         Long roomId = messagePostDto.getRoomId();
-        if (!userRepository.existsById(userId)) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse(ApiResponseStatus.FAIL, "user not found", ""));
-        }
-        if (!learningRoomRepository.existsById(roomId)) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse(ApiResponseStatus.FAIL, "room not found", ""));
-        }
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("cant find the user"));
+        LearningRoom room = learningRoomRepository.findById(roomId)
+                .orElseThrow(() -> new NotFoundException("cant find the room"));
         if (!participantRepository.checkIfExistedInAnotherRoom(userId, roomId)) {
             return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(new ApiResponse(ApiResponseStatus.FAIL, "You are not allowed to send messages in this room because you have not entered yet", ""));
         }
-        LearningRoomMessage message = learningRoomMapper.toMessageEntity(messagePostDto);
+        LearningRoomMessage message = LearningRoomMessage.builder()
+                .message(messagePostDto.getMessage())
+                .user(user)
+                .learningRoom(room)
+                .createdAt(new Date())
+                .build();
         message = learningRoomMessageRepository.save(message);
         simpMessagingTemplate.convertAndSend("/topic/learning-room/message/" + roomId, learningRoomMapper.toMessageDto(message));
         return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "message sent", learningRoomMapper.toMessageDto(message)));
+    }
+
+    @Override
+    public ResponseEntity<?> getMessages(Long roomId) {
+        List<LearningRoomMessage> messages = learningRoomMessageRepository.getMessages(roomId);
+        return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "get messages", messages.stream().map(learningRoomMapper::toMessageDto)));
     }
 
     @Override
@@ -313,5 +322,12 @@ public class LearningRoomService implements ILearningRoomService {
         Long roomId = participant.getRoom().getId();
         simpMessagingTemplate.convertAndSend("/topic/learning-room/" + roomId, new WebsocketType<>("toggle", participantMapper.toDto(participant)));
         return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "Toggle", participantMapper.toDto(participant)));
+    }
+
+    @Override
+    public ResponseEntity<?> getRoomPassword(Long roomId) {
+        LearningRoom learningRoom = learningRoomRepository.findById(roomId)
+                .orElseThrow(() -> new NotFoundException("ROOM NOT FOUND"));
+        return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "get password", learningRoom.getPassword()));
     }
 }

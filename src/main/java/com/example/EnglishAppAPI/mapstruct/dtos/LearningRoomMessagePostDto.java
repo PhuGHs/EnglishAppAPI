@@ -13,7 +13,7 @@ import java.util.Date;
 @Getter
 @Setter
 public class LearningRoomMessagePostDto {
-    @JsonProperty("learning_room_message_id")
+    @JsonProperty("learning_room_id")
     private Long roomId;
     @JsonProperty("message")
     private String message;

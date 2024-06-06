@@ -33,4 +33,7 @@ public class MessageDto {
     private Date createdAt;
     @JsonProperty("image")
     private String image;
+    @JsonProperty("invitation")
+    private String invitation;
+
 }

@@ -70,6 +70,18 @@ public class LearningRoomController {
         return learningRoomService.suggestRooms(currentUserId);
     }
 
+    @GetMapping("/{roomId}/get-messages")
+    @PreAuthorize("hasAuthority('LEARNER')")
+    public ResponseEntity<?> getMessages(@PathVariable Long roomId) {
+        return learningRoomService.getMessages(roomId);
+    }
+
+    @GetMapping("/{roomId}/get-password")
+    @PreAuthorize("hasAuthority('LEARNER')")
+    public ResponseEntity<?> getPassword(@PathVariable Long roomId) {
+        return learningRoomService.getRoomPassword(roomId);
+    }
+
     @PutMapping("/end-room")
     @PreAuthorize("hasAuthority('LEARNER')")
     public ResponseEntity<?> toggleSpeaker(@RequestBody @Valid JoinLearningRoomDto joinLearningRoomDto) {

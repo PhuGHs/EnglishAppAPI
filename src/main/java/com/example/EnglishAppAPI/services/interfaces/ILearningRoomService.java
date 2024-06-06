@@ -18,7 +18,9 @@ public interface ILearningRoomService {
     ResponseEntity<?> getLearningRooms(boolean isLive);
     ResponseEntity<?> endRoom(Long roomId, Long ownerId);
     ResponseEntity<?> sendMessages(LearningRoomMessagePostDto messagePostDto);
+    ResponseEntity<?> getMessages(Long roomId);
     ResponseEntity<?> suggestRooms(Long currentUserId);
     ResponseEntity<?> leaveRoom(Long roomId, Long participantId);
     ResponseEntity<?> toggleSpeaker(Long participantId);
+    ResponseEntity<?> getRoomPassword(Long roomId);
 }

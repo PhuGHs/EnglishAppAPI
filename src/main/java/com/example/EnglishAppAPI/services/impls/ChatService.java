@@ -101,6 +101,7 @@ public class ChatService implements IChatService {
                 .message(messagePostDto.getMessage())
                 .isRead(false)
                 .createdAt(new Date())
+                .invitation(messagePostDto.getInvitation())
                 .build();
         message = messageRepository.save(message);
         if (!Objects.equals(messagePostDto.getImage(), "")) {
@@ -125,6 +126,7 @@ public class ChatService implements IChatService {
                 .message(message.getMessage())
                 .isRead(message.isRead())
                 .createdAt(message.getCreatedAt())
+                .invitation(message.getInvitation())
                 .build();
         simpMessagingTemplate.convertAndSend("/topic/chatroom/" + messagePostDto.getMessageRoomId(), messageDto);
         simpMessagingTemplate.convertAndSend("/topic/chatroom-out/" + messageDto.getReceiver().getUserId(), messageRoomMapper.toDto(messageRoom));

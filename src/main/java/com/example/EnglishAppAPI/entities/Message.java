@@ -48,4 +48,8 @@ public class Message {
     @Column(name = "image")
     @Nullable
     private String image;
+
+    @Column(name = "invitation")
+    @Nullable
+    private String invitation;
 }

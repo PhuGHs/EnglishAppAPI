@@ -31,4 +31,7 @@ public class MessagePostDto {
     private boolean isRead = false;
     @JsonProperty("image")
     private String image = "";
+    @JsonProperty("invitation")
+    private String invitation;
+
 }
