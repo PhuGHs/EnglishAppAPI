@@ -54,6 +54,14 @@ services:
     environment:
       - PMA_ARBITRARY=1
 
+  redis:
+    container_name: redis-tutorial
+    image: redis:latest
+    ports:
+      - "6380:6379"
+    networks:
+      - my-network
+
 volumes:
   mysql-data:
   elasticsearch:

@@ -12,6 +12,7 @@ public interface MessageMapper {
     @Mapping(source = "sender", target = "sender")
     @Mapping(source = "receiver", target = "receiver")
     @Mapping(source = "createdAt", target = "createdAt")
+    @Mapping(source = "invitation", target = "invitation")
     MessageDto toDto(Message message);
 
     @Mapping(source = "messageRoomId", target = "messageRoom.messageRoomId")

@@ -2,15 +2,12 @@ package com.example.EnglishAppAPI.services.impls;
 
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import co.elastic.clients.elasticsearch._types.FieldValue;
 import co.elastic.clients.elasticsearch._types.SortOptions;
 import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
-import co.elastic.clients.elasticsearch._types.query_dsl.TermsQueryField;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
-import co.elastic.clients.util.ObjectBuilder;
 import com.example.EnglishAppAPI.entities.DiscussionTopic;
 import com.example.EnglishAppAPI.entities.indexes.DiscussionDocument;
 import com.example.EnglishAppAPI.mapstruct.dtos.*;
@@ -63,9 +60,10 @@ public class DiscussionService implements IDiscussionService {
     private final DiscussionTopicMapper discussionTopicMapper;
     private final DiscussionTopicRepository discussionTopicRepository;
     private final ElasticsearchClient elasticsearchClient;
+    private final MissionService missionService;
 
     @Autowired
-    public DiscussionService(DiscussionRepository discussionRepository, UserRepository userRepository, EnglishTopicRepository englishTopicRepository, DiscussionMapper discussionMapper, DiscussionDocumentRepository discussionDocumentRepository, SimpMessagingTemplate simpMessagingTemplate, NotificationService notificationService, UserMapper userMapper, DiscussionTopicMapper discussionTopicMapper, DiscussionTopicRepository discussionTopicRepository, ElasticsearchClient elasticsearchClient) {
+    public DiscussionService(DiscussionRepository discussionRepository, UserRepository userRepository, EnglishTopicRepository englishTopicRepository, DiscussionMapper discussionMapper, DiscussionDocumentRepository discussionDocumentRepository, SimpMessagingTemplate simpMessagingTemplate, NotificationService notificationService, UserMapper userMapper, DiscussionTopicMapper discussionTopicMapper, DiscussionTopicRepository discussionTopicRepository, ElasticsearchClient elasticsearchClient, MissionService missionService) {
         this.discussionRepository = discussionRepository;
         this.userRepository = userRepository;
         this.englishTopicRepository = englishTopicRepository;
@@ -77,6 +75,7 @@ public class DiscussionService implements IDiscussionService {
         this.discussionTopicMapper = discussionTopicMapper;
         this.discussionTopicRepository = discussionTopicRepository;
         this.elasticsearchClient = elasticsearchClient;
+        this.missionService = missionService;
     }
 
     @Override
@@ -118,6 +117,8 @@ public class DiscussionService implements IDiscussionService {
                 .build();
         discussion = discussionRepository.save(discussion);
         discussionDocumentRepository.save(DiscussionDocument.fromEntity(discussion, userMapper.toElas(discussion.getUser()), discussionTopicMapper.toDto(discussion.getTopic())));
+
+        missionService.updateMission(new UserMissionPostDto(user.getUserId(), 2L));
 
         for (UserEntity us : user.getFollowers()) {
             NotificationDto notificationDto = notificationService.addNotification(new NotificationPostDto(user.getUserId(), us.getUserId(), user.getFullName() + " the one you are following, created a new discussion!", false, NotificationType.DISCUSSION ,discussion.getId(), discussion.getId()));

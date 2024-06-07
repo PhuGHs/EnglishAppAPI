@@ -38,8 +38,9 @@ public class LearningRoomService implements ILearningRoomService {
     private final NotificationService notificationService;
     private final EmailService emailService;
     private final AccountRepository accountRepository;
+    private final MissionService missionService;
     @Autowired
-    public LearningRoomService(ParticipantRepository participantRepository, LearningRoomRepository learningRoomRepository, UserRepository userRepository, EnglishTopicRepository englishTopicRepository, LearningRoomMapper learningRoomMapper, ParticipantMapper participantMapper, TaskScheduler taskScheduler, LearningRoomMessageRepository learningRoomMessageRepository, SimpMessagingTemplate simpMessagingTemplate, NotificationService notificationService, EmailService emailService, AccountRepository accountRepository) {
+    public LearningRoomService(ParticipantRepository participantRepository, LearningRoomRepository learningRoomRepository, UserRepository userRepository, EnglishTopicRepository englishTopicRepository, LearningRoomMapper learningRoomMapper, ParticipantMapper participantMapper, TaskScheduler taskScheduler, LearningRoomMessageRepository learningRoomMessageRepository, SimpMessagingTemplate simpMessagingTemplate, NotificationService notificationService, EmailService emailService, AccountRepository accountRepository, MissionService missionService) {
         this.participantRepository = participantRepository;
         this.learningRoomRepository = learningRoomRepository;
         this.userRepository = userRepository;
@@ -52,6 +53,7 @@ public class LearningRoomService implements ILearningRoomService {
         this.notificationService = notificationService;
         this.emailService = emailService;
         this.accountRepository = accountRepository;
+        this.missionService = missionService;
     }
 
     @Override
@@ -90,6 +92,7 @@ public class LearningRoomService implements ILearningRoomService {
             NotificationDto notificationDto = notificationService.addNotification(new NotificationPostDto(owner.getUserId(), us.getUserId(), owner.getFullName() + " the one you are following, created a learning room! Come join with him", false, NotificationType.LEARNINGROOM , roomId, roomId));
             simpMessagingTemplate.convertAndSend("topic/user/notification/" + us.getUserId(), notificationDto);
         }
+        missionService.updateMission(new UserMissionPostDto(owner.getUserId(), 4L));
 
         //handle duration
         Calendar calendar = Calendar.getInstance();
@@ -163,15 +166,18 @@ public class LearningRoomService implements ILearningRoomService {
                 .orElseThrow(() -> new NotFoundException("learning room not found"));
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("user not found"));
+        if (!learningRoom.isLive()) {
+            return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(ApiResponseStatus.FAIL, "the room is not live", ""));
+        }
         if (participantRepository.checkIfExistedInAnotherRoom(userId, roomId)) {
-            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(new ApiResponse(ApiResponseStatus.FAIL, "you are not able to join multiple room at once", ""));
+            return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(ApiResponseStatus.FAIL, "you are not able to join multiple room at once", ""));
         }
         if (learningRoom.getTopic().getEnglishLevel().getLevelId() > user.getEnglishLevel().getLevelId()) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ApiResponse(ApiResponseStatus.FAIL, "your level is not suitable for this room", "level"));
+            return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(ApiResponseStatus.FAIL, "your level is not suitable for this room", "level"));
         }
         if (learningRoom.isPrivate()) {
             if (!Objects.equals(learningRoom.getPassword(), joinLearningRoom.getPassword())) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ApiResponse(ApiResponseStatus.FAIL, "password is not correct", "password"));
+                return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(ApiResponseStatus.FAIL, "password is not correct", "password"));
             }
         }
         Participant participant = Participant.builder()
@@ -183,6 +189,8 @@ public class LearningRoomService implements ILearningRoomService {
                 .build();
         learningRoom.getParticipants().add(participant);
         learningRoom = learningRoomRepository.save(learningRoom);
+
+        missionService.updateMission(new UserMissionPostDto(userId, 3L));
         simpMessagingTemplate.convertAndSend("/topic/learning-room/" + roomId, new WebsocketType<>("join", participantMapper.toDto(participant)));
         return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "joined the room", learningRoomMapper.toDto(learningRoom)));
     }

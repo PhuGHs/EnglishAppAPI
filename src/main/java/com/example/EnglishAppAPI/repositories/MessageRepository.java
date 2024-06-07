@@ -12,6 +12,6 @@ import java.util.Optional;
 
 @Repository
 public interface MessageRepository extends JpaRepository<Message, Long> {
-    @Query("SELECT m FROM Message m WHERE m.messageRoom.messageRoomId = :messageRoomId ORDER BY m.createdAt desc")
+    @Query("SELECT m FROM Message m WHERE m.messageRoom.messageRoomId = :messageRoomId ORDER BY m.createdAt asc")
     List<Message> findByMessageRoom(@Param("messageRoomId") Long messageRoomId);
 }

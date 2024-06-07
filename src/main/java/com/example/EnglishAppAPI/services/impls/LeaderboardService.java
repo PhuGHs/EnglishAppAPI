@@ -33,7 +33,7 @@ public class LeaderboardService implements ILeaderboardService {
     @Override
     public ResponseEntity<?> getLeaderboardByDateRange(String key, int startRank, int endRank) {
         ZSetOperations<String, String> zSetOperations = redisTemplate.opsForZSet();
-        Set<ZSetOperations.TypedTuple<String>> result = zSetOperations.rangeWithScores(key, startRank, endRank);
+        Set<ZSetOperations.TypedTuple<String>> result = zSetOperations.reverseRangeWithScores(key, startRank, endRank);
         assert result != null;
         List<LeaderboardDto> leaderboardDtos = result.stream()
                 .map(this::mapToLeaderboardDto)

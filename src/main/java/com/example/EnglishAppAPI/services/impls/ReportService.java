@@ -57,7 +57,7 @@ public class ReportService implements IReportService {
         try {
             Map<String, Object> uploadResult = cloudinaryService.uploadFile(reportDto.getEvidenceImage(), "report"+report1.getId().toString(), true, true);
             if (!uploadResult.containsKey("public_id")) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse(ApiResponseStatus.FAIL, "Failed to upload image" + uploadResult.get("error").toString(), ""));
+                return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(ApiResponseStatus.FAIL, "Failed to upload image" + uploadResult.get("error").toString(), ""));
             }
             String fileUrl = String.format("https://res.cloudinary.com/daszajz9a/image/upload/v%s/%s", uploadResult.get("version"), uploadResult.get("public_id"));
             report1.setEvidenceImage(fileUrl);
@@ -66,9 +66,9 @@ public class ReportService implements IReportService {
             reportRepository.save(report1);
             userRepository.save(user);
             userRepository.save(reported);
-            return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(ApiResponseStatus.SUCCESS, "create short story", reportMapper.toDto(report1)));
+            return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(ApiResponseStatus.SUCCESS, "create short story", reportMapper.toDto(report1)));
         } catch (IOException ex) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse(ApiResponseStatus.FAIL, ex.getMessage(), ""));
+            return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(ApiResponseStatus.FAIL, ex.getMessage(), ""));
         }
     }
 

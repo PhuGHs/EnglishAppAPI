@@ -21,4 +21,6 @@ public class EnglishTopicDto {
     @JsonProperty("english_level_id")
     @NotNull(message = "the english level is required")
     private Long englishLevelId;
+    @JsonProperty("english_level_name")
+    private String englishLevelName;
 }

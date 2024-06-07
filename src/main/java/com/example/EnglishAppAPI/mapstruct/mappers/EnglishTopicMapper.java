@@ -11,6 +11,7 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface EnglishTopicMapper {
     @Mapping(source = "englishLevel.levelId", target = "englishLevelId")
+    @Mapping(source = "englishLevel.levelName", target = "englishLevelName")
     EnglishTopicDto toDto(EnglishTopic englishTopic);
     @Mapping(target = "englishLevel.levelId", source = "englishLevelId")
     EnglishTopic toEntity(EnglishTopicDto englishTopicDto);

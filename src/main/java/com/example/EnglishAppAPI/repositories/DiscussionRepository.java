@@ -15,7 +15,7 @@ import java.util.List;
 public interface DiscussionRepository extends JpaRepository<Discussion, Long> {
     Page<Discussion> findAll( Pageable pageable);
     Page<Discussion> findByUser(UserEntity user, Pageable pageable);
-    @Query("SELECT d FROM Discussion d ORDER BY d.numberOfAnswers DESC LIMIT 10")
+    @Query("SELECT d FROM Discussion d ORDER BY d.numberOfAnswers DESC LIMIT 5")
     List<Discussion> getPopularDiscussions();
     Page<Discussion> findByTopic(EnglishTopic topic, Pageable pageable);
     @Override

@@ -88,7 +88,7 @@ public class AccountService implements IAccountService {
                 .orElseThrow(() -> new NotFoundException("english level not found"));
         user.setEnglishLevel(level);
         user = userRepository.save(user);
-        Map<String, Object> result = cloudinaryService.uploadFile("https://cdn.icon-icons.com/icons2/1378/PNG/512/avatardefault_92824.png", "user-avatar-"+ user.getUserId().toString(), true, true);
+        Map<String, Object> result = cloudinaryService.uploadFile("https://res.cloudinary.com/daszajz9a/image/upload/v1716735453/user-https:/res.cloudinary.com/daszajz9a/image/upload/v1716391456/user-avatar-2.png", "user-avatar-"+ user.getUserId().toString(), true, true);
         if (!result.containsKey("public_id")) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse(ApiResponseStatus.FAIL, "Failed to upload image" + result.get("error").toString(), ""));
         }
