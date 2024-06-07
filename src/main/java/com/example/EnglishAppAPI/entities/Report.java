@@ -34,6 +34,9 @@ public class Report {
     @Column(name = "content")
     private String content;
 
+    @Column(name = "reason")
+    private String reason;
+
     @Column(name = "is_solved")
     private boolean isSolved = false;
 

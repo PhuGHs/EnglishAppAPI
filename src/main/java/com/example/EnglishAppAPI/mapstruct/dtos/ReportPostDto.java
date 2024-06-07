@@ -16,6 +16,9 @@ public class ReportPostDto {
     @JsonProperty("content")
     @NotEmpty(message = "content may not be empty")
     private String content;
+    @JsonProperty("reason")
+    @NotEmpty(message = "reason may not be empty")
+    private String reason;
     @JsonProperty("reporter_id")
     @NotNull(message = "reporter may not null")
     private Long reporterId;

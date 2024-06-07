@@ -18,6 +18,10 @@ public class EnglishTest {
     @Column(name = "english_test_id")
     private Long englishTestId;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "level_id")
+    private EnglishLevel englishLevel;
+
     @Column(name = "number_of_questions")
     private int numberOfQuestions;
 

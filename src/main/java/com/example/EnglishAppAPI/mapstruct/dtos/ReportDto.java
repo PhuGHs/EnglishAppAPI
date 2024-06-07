@@ -24,10 +24,12 @@ public class ReportDto {
     private String evidenceImage;
     @JsonProperty("content")
     private String content;
-    @JsonProperty("reporter_id")
-    private Long reporterId;
-    @JsonProperty("reported_id")
-    private Long reportedId;
+    @JsonProperty("reason")
+    private String reason;
+    @JsonProperty("reporter")
+    private UserNecessaryDto reporter;
+    @JsonProperty("reported")
+    private UserNecessaryDto reported;
     @JsonProperty("is_solved")
     private boolean isSolved;
     @JsonProperty("created_date")

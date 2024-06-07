@@ -22,4 +22,6 @@ public class AccountDto {
     private String email;
     @JsonProperty("is_active")
     private boolean isActive;
+    @JsonProperty("is_banned")
+    private boolean isBanned;
 }

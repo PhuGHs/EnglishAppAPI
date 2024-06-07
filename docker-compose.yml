@@ -61,7 +61,19 @@ services:
       - "6380:6379"
     networks:
       - my-network
-
+#  engcom-app:
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    container_name: engcom-container
+#    ports:
+#      - "8080:8080"
+#    depends_on:
+#      - mysql
+#      - elasticsearch
+#      - phpmyadmin
+#      - redis
+#      - kibana
 volumes:
   mysql-data:
   elasticsearch:

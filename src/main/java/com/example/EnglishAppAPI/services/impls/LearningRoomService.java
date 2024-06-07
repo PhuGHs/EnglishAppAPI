@@ -151,7 +151,7 @@ public class LearningRoomService implements ILearningRoomService {
                     .orElseThrow(() -> new NotFoundException("Can't find the room"));
             learningRoom1.setLive(false);
             learningRoomRepository.save(learningRoom1);
-            simpMessagingTemplate.convertAndSend("topic/learning-room/" + roomId, new WebsocketType<>("end", "room time has exceeded the duration"));
+            simpMessagingTemplate.convertAndSend("/topic/learning-room/" + roomId, new WebsocketType<>("end", "room time has exceeded the duration"));
         }, endedInstant);
         learningRoom = learningRoomRepository.save(learningRoom);
 

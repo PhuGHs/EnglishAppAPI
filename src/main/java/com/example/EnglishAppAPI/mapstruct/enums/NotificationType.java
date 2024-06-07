@@ -5,6 +5,7 @@ public enum NotificationType {
     REVIEW("Review"),
     DISCUSSION("Discussion"),
     ANSWER("Answer"),
+    REPORT("Report"),
     LEARNINGROOM("LearningRoom");
 
     private String type;

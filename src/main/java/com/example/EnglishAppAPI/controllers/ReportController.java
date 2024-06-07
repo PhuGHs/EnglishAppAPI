@@ -29,6 +29,13 @@ public class ReportController {
     ) {
         return reportService.getAllReports(pageNumber, pageSize, sortBy);
     }
+
+    @GetMapping("/{id}/get")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<ApiResponse> getDetails(@PathVariable Long id) {
+        return reportService.getReport(id);
+    }
+
     @PostMapping("/report-user")
     @PreAuthorize("hasAuthority('LEARNER')")
     public ResponseEntity<ApiResponse> reportUser(@RequestBody ReportPostDto reportDto) {

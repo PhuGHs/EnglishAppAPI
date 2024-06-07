@@ -94,6 +94,11 @@ public class UserEntity {
     @JoinTable(name = "user_mission", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "mission_id"))
     private Set<Mission> missions = new HashSet<>();
 
+    @JsonIgnore
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinTable(name = "user_test", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "english_test_id"))
+    private Set<EnglishTest> tests = new HashSet<>();
+
 //    @JsonIgnore
 //    @ManyToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
 //    @JoinTable(name = "participants", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "room_id"))

@@ -1,9 +1,12 @@
 package com.example.EnglishAppAPI.services.impls;
 
+import com.example.EnglishAppAPI.mapstruct.dtos.NotificationDto;
+import com.example.EnglishAppAPI.mapstruct.dtos.NotificationPostDto;
 import com.example.EnglishAppAPI.mapstruct.dtos.ReportPostDto;
 import com.example.EnglishAppAPI.entities.Report;
 import com.example.EnglishAppAPI.entities.UserEntity;
 import com.example.EnglishAppAPI.exceptions.NotFoundException;
+import com.example.EnglishAppAPI.mapstruct.enums.NotificationType;
 import com.example.EnglishAppAPI.mapstruct.mappers.ReportMapper;
 import com.example.EnglishAppAPI.responses.ApiResponse;
 import com.example.EnglishAppAPI.responses.ApiResponseStatus;
@@ -17,6 +20,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -31,13 +35,17 @@ public class ReportService implements IReportService {
     private final ReportRepository reportRepository;
     private final ReportMapper reportMapper;
     private final CloudinaryService cloudinaryService;
+    private final NotificationService notificationService;
+    private final SimpMessagingTemplate simpMessagingTemplate;
 
     @Autowired
-    public ReportService(UserRepository userRepository, ReportRepository reportRepository, ReportMapper reportMapper, CloudinaryService cloudinaryService) {
+    public ReportService(UserRepository userRepository, ReportRepository reportRepository, ReportMapper reportMapper, CloudinaryService cloudinaryService, NotificationService notificationService, SimpMessagingTemplate simpMessagingTemplate) {
         this.userRepository = userRepository;
         this.reportRepository = reportRepository;
         this.reportMapper = reportMapper;
         this.cloudinaryService = cloudinaryService;
+        this.notificationService = notificationService;
+        this.simpMessagingTemplate = simpMessagingTemplate;
     }
 
     @Override
@@ -51,6 +59,7 @@ public class ReportService implements IReportService {
                 .content(reportDto.getContent())
                 .reported(reported)
                 .reporter(user)
+                .reason(reportDto.getReason())
                 .createdDate(new Date())
                 .build();
         Report report1 = reportRepository.save(report);
@@ -78,6 +87,9 @@ public class ReportService implements IReportService {
                 .orElseThrow(() -> new NotFoundException("cannot find the report"));
         report.setSolved(true);
         reportRepository.save(report);
+        Long userId = report.getReporter().getUserId();
+        NotificationDto notificationDto = notificationService.addNotification(new NotificationPostDto(userId, userId, "Your report have recently been reviewed and nothing happened! ", false, NotificationType.REPORT , null, null));
+        simpMessagingTemplate.convertAndSend("/topic/user/notification/" + userId, notificationDto);
         return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(ApiResponseStatus.SUCCESS, "mark as solved", report));
     }
 
@@ -89,7 +101,9 @@ public class ReportService implements IReportService {
         Report report = reportRepository.findById(reportId)
                         .orElseThrow(() -> new NotFoundException("cannot find the report"));
         report.setSolved(true);
-        userRepository.save(reported);
+        reported = userRepository.save(reported);
+        Long userId = reported.getUserId();
+        simpMessagingTemplate.convertAndSend("/topic/user/ban/" + userId, "You are prohibited from accessing our app!");
         return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(ApiResponseStatus.SUCCESS, "ban user", reported));
     }
 
@@ -98,5 +112,12 @@ public class ReportService implements IReportService {
         Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by(sortBy).descending());
         Page<Report> reports = reportRepository.findAll(pageable);
         return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(ApiResponseStatus.SUCCESS, "get all reports", reports.map(reportMapper::toDto)));
+    }
+
+    @Override
+    public ResponseEntity<ApiResponse> getReport(Long id) {
+        Report report = reportRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Report not found"));
+        return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "get report", reportMapper.toDto(report)));
     }
 }

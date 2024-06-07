@@ -11,4 +11,5 @@ public interface IReportService {
     ResponseEntity<ApiResponse> markReportAsSolved(Long reportId);
     ResponseEntity<ApiResponse> banUser(Long reportId, Long reportedUserId);
     ResponseEntity<ApiResponse> getAllReports(int pageNumber, int pageSize, String sortBy);
+    ResponseEntity<ApiResponse> getReport(Long id);
 }

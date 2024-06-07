@@ -8,5 +8,6 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring", uses = {UserMapper.class})
 public interface AccountMapper {
     @Mapping(target = "user", source = "user")
+    @Mapping(target = "banned", source = "user.banned")
     AccountDto toDto(Account account);
 }

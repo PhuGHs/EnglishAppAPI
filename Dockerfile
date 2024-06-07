@@ -1,4 +1,7 @@
-FROM ubuntu:latest
-LABEL authors="ASUS"
+FROM openjdk:17
 
-ENTRYPOINT ["top", "-b"]
+WORKDIR /app
+
+COPY target/EnglishAppAPI-0.0.1-SNAPSHOT.jar /app
+
+CMD ["java", "-jar", "EnglishAppAPI-0.0.1-SNAPSHOT.jar"]

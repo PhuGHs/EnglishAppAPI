@@ -12,7 +12,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class BanUserDto {
-    @JsonProperty("report-id")
+    @JsonProperty("report_id")
     @NotNull(message = "reportId is required")
     private Long reportId;
 
