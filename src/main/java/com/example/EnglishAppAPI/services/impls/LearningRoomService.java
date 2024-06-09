@@ -138,6 +138,7 @@ public class LearningRoomService implements ILearningRoomService {
             LearningRoom learningRoom1 = learningRoomRepository.findById(roomId)
                             .orElseThrow(() -> new NotFoundException("Can't find the room"));
             learningRoom1.setLive(true);
+            learningRoomRepository.save(learningRoom1);
             emailService.sendEmail(email, "Notify about the learning room you scheduled before", "Recently, you have scheduled a learning room, so it is the time right now, come to host the room!");
             NotificationDto notificationDto = notificationService.addNotification(new NotificationPostDto(owner.getUserId(), owner.getUserId(), "You have recently scheduled a learning room, so it is the time right now, come to host the room!", false, NotificationType.LEARNINGROOM , roomId, roomId));
             simpMessagingTemplate.convertAndSend("/topic/user/notification/" + owner.getUserId(), notificationDto);
