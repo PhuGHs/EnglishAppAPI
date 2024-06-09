@@ -13,6 +13,8 @@ import lombok.Setter;
 @Setter
 @Getter
 public class EnglishTestPostDto {
+    @JsonProperty("english_level_id")
+    private Long englishLevelId;
     @JsonProperty("number_of_questions")
     @NotNull(message = "number of questions is required")
     private int numberOfQuestions;

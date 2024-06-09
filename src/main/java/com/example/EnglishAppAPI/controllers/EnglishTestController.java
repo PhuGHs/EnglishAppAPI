@@ -23,8 +23,8 @@ public class EnglishTestController {
     private EnglishTestService englishTestService;
 
     @GetMapping("")
-    public ResponseEntity<?> getEnglishTests() {
-        return englishTestService.getEnglishTests();
+    public ResponseEntity<?> getEnglishTests(@RequestParam Long levelId) {
+        return englishTestService.getEnglishTests(levelId);
     }
 
     @PostMapping("/create")
@@ -42,6 +42,11 @@ public class EnglishTestController {
     @GetMapping("/{testId}/get-questions")
     public ResponseEntity<?> getQuestions(@PathVariable Long testId) {
         return englishTestService.getQuestions(testId);
+    }
+
+    @GetMapping("/get-user-tests")
+    public ResponseEntity<?> getUserTests(@RequestParam Long userId, @RequestParam Long levelId) {
+        return englishTestService.getUserTests(userId, levelId);
     }
 
     @PostMapping("/insert-questions")

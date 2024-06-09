@@ -10,13 +10,13 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-public class SubmitTestDto {
-    @JsonProperty("english_test_id")
-    private Long id;
-    @JsonProperty("score")
-    private int score;
+public class UserNecDto {
     @JsonProperty("user_id")
     private Long userId;
-    @JsonProperty("is_entry_level_test")
-    private boolean isEntryLevelTest;
+    @JsonProperty("full_name")
+    private String fullName;
+    @JsonProperty("profile_picture")
+    private String profilePicture;
+    @JsonProperty("english_level")
+    private EnglishLevelDto englishLevel;
 }

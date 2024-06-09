@@ -179,6 +179,7 @@ public class UserService implements IUserService {
         if (optionalUserDocument.isPresent()) {
             UserDocument userDocument = optionalUserDocument.get();
             userDocument.setFullName(user.getFullName());
+            userDocument.setEnglishLevel(user.getEnglishLevel().getLevelName());
             userDocument.setQuote(user.getQuote());
             userDocument.setProfilePicture(user.getProfilePicture());
             userDocument.setFollowersCount(user.getFollowersCount());

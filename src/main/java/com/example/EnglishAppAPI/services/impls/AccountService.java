@@ -1,5 +1,6 @@
 package com.example.EnglishAppAPI.services.impls;
 
+import com.example.EnglishAppAPI.configuration.ThreadPoolTaskSchedulerConfig;
 import com.example.EnglishAppAPI.configuration.security.JwtGenerator;
 import com.example.EnglishAppAPI.entities.EnglishLevel;
 import com.example.EnglishAppAPI.entities.indexes.UserDocument;
@@ -26,6 +27,7 @@ import com.example.EnglishAppAPI.services.interfaces.IAccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -36,6 +38,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
@@ -54,11 +57,13 @@ public class AccountService implements IAccountService {
     private final AccountMapper accountMapper;
     private final MissionService missionService;
     private final InterestMapper interestMapper;
+    private final EnglishTestService englishTestService;
+    private final ThreadPoolTaskScheduler taskScheduler;
     @Autowired
     private EmailService emailService;
 
     @Autowired
-    public AccountService(AccountRepository accountRepository, RoleRepository roleRepository, UserRepository userRepository, UserDocumentRepository userDocumentRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtGenerator jwtGenerator, EnglishLevelRepository englishLevelRepository, CloudinaryService cloudinaryService, AccountMapper accountMapper, MissionService missionService, InterestMapper interestMapper) {
+    public AccountService(AccountRepository accountRepository, RoleRepository roleRepository, UserRepository userRepository, UserDocumentRepository userDocumentRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtGenerator jwtGenerator, EnglishLevelRepository englishLevelRepository, CloudinaryService cloudinaryService, AccountMapper accountMapper, MissionService missionService, InterestMapper interestMapper, EnglishTestService englishTestService, ThreadPoolTaskScheduler taskScheduler) {
         this.accountRepository = accountRepository;
         this.roleRepository = roleRepository;
         this.userRepository = userRepository;
@@ -71,6 +76,8 @@ public class AccountService implements IAccountService {
         this.accountMapper = accountMapper;
         this.missionService = missionService;
         this.interestMapper = interestMapper;
+        this.englishTestService = englishTestService;
+        this.taskScheduler = taskScheduler;
     }
 
     @Override
@@ -88,6 +95,7 @@ public class AccountService implements IAccountService {
                 .orElseThrow(() -> new NotFoundException("english level not found"));
         user.setEnglishLevel(level);
         user = userRepository.save(user);
+
         Map<String, Object> result = cloudinaryService.uploadFile("https://res.cloudinary.com/daszajz9a/image/upload/v1716735453/user-https:/res.cloudinary.com/daszajz9a/image/upload/v1716391456/user-avatar-2.png", "user-avatar-"+ user.getUserId().toString(), true, true);
         if (!result.containsKey("public_id")) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse(ApiResponseStatus.FAIL, "Failed to upload image" + result.get("error").toString(), ""));
@@ -102,7 +110,10 @@ public class AccountService implements IAccountService {
         account.setActive(false);
         account.setUser(user);
         account = accountRepository.save(account);
+
         missionService.addMissions(user.getUserId());
+        englishTestService.insertTestsToUsers(user.getUserId());
+
         return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(ApiResponseStatus.SUCCESS, "Created account successfully!", accountMapper.toDto(account)));
     }
 

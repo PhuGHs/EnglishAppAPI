@@ -16,7 +16,7 @@ public interface LearningRoomRepository extends JpaRepository<LearningRoom, Long
     @Query("select lr from LearningRoom lr where lr.isLive = true order by lr.createdAt")
     List<LearningRoom> getLiveLearningRoom();
 
-    @Query("select lr from LearningRoom lr where lr.scheduledTo > current date order by lr.scheduledTo asc")
+    @Query("select lr from LearningRoom lr where lr.scheduledTo > current time order by lr.scheduledTo asc")
     List<LearningRoom> getScheduleRooms();
 
     @Query("select lr from LearningRoom lr where lr.isLive = true and lr.topic.englishLevel.levelId <= :levelId order by lr.createdAt limit 10")

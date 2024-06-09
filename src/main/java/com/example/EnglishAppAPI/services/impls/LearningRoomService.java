@@ -16,9 +16,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -32,28 +34,28 @@ public class LearningRoomService implements ILearningRoomService {
     private final EnglishTopicRepository englishTopicRepository;
     private final LearningRoomMapper learningRoomMapper;
     private final ParticipantMapper participantMapper;
-    private final TaskScheduler taskScheduler;
     private final LearningRoomMessageRepository learningRoomMessageRepository;
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final NotificationService notificationService;
     private final EmailService emailService;
     private final AccountRepository accountRepository;
     private final MissionService missionService;
+    private ThreadPoolTaskScheduler taskScheduler;
     @Autowired
-    public LearningRoomService(ParticipantRepository participantRepository, LearningRoomRepository learningRoomRepository, UserRepository userRepository, EnglishTopicRepository englishTopicRepository, LearningRoomMapper learningRoomMapper, ParticipantMapper participantMapper, TaskScheduler taskScheduler, LearningRoomMessageRepository learningRoomMessageRepository, SimpMessagingTemplate simpMessagingTemplate, NotificationService notificationService, EmailService emailService, AccountRepository accountRepository, MissionService missionService) {
+    public LearningRoomService(ParticipantRepository participantRepository, LearningRoomRepository learningRoomRepository, UserRepository userRepository, EnglishTopicRepository englishTopicRepository, LearningRoomMapper learningRoomMapper, ParticipantMapper participantMapper, LearningRoomMessageRepository learningRoomMessageRepository, SimpMessagingTemplate simpMessagingTemplate, NotificationService notificationService, EmailService emailService, AccountRepository accountRepository, MissionService missionService, ThreadPoolTaskScheduler taskScheduler) {
         this.participantRepository = participantRepository;
         this.learningRoomRepository = learningRoomRepository;
         this.userRepository = userRepository;
         this.englishTopicRepository = englishTopicRepository;
         this.learningRoomMapper = learningRoomMapper;
         this.participantMapper = participantMapper;
-        this.taskScheduler = taskScheduler;
         this.learningRoomMessageRepository = learningRoomMessageRepository;
         this.simpMessagingTemplate = simpMessagingTemplate;
         this.notificationService = notificationService;
         this.emailService = emailService;
         this.accountRepository = accountRepository;
         this.missionService = missionService;
+        this.taskScheduler = taskScheduler;
     }
 
     @Override
@@ -88,24 +90,22 @@ public class LearningRoomService implements ILearningRoomService {
         learningRoom = learningRoomRepository.save(learningRoom);
         Long roomId = learningRoom.getId();
 
+        int duration = learningRoomPostDto.getDuration();
+
         for (UserEntity us : owner.getFollowers()) {
             NotificationDto notificationDto = notificationService.addNotification(new NotificationPostDto(owner.getUserId(), us.getUserId(), owner.getFullName() + " the one you are following, created a learning room! Come join with him", false, NotificationType.LEARNINGROOM , roomId, roomId));
-            simpMessagingTemplate.convertAndSend("topic/user/notification/" + us.getUserId(), notificationDto);
+            simpMessagingTemplate.convertAndSend("/topic/user/notification/" + us.getUserId(), notificationDto);
         }
         missionService.updateMission(new UserMissionPostDto(owner.getUserId(), 4L));
 
         //handle duration
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(learningRoom.getCreatedAt());
-        calendar.add(Calendar.HOUR, learningRoomPostDto.getDuration());
-        Instant endedInstant = calendar.getTime().toInstant();
         taskScheduler.schedule(() -> {
             LearningRoom learningRoom1 = learningRoomRepository.findById(roomId)
                             .orElseThrow(() -> new NotFoundException("Can't find the room"));
             learningRoom1.setLive(false);
             learningRoomRepository.save(learningRoom1);
-            simpMessagingTemplate.convertAndSend("topic/learning-room/" + roomId, new WebsocketType<>("end", "room time has exceeded the duration"));
-        }, endedInstant);
+            simpMessagingTemplate.convertAndSend("/topic/learning-room/" + roomId, new WebsocketType<>("end", "room time has exceeded the duration"));
+        }, new Date(System.currentTimeMillis() + (long) duration * 3600000));
         return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "created learning room instantly", learningRoomMapper.toDto(learningRoom)));
     }
 
@@ -129,30 +129,29 @@ public class LearningRoomService implements ILearningRoomService {
                 .owner(owner)
                 .build();
 
+        int duration = learningRoomPostLaterDto.getDuration();
         //schedule to notify user
         Date scheduledTo = learningRoomPostLaterDto.getScheduledTo();
-        Instant scheduledInstant = scheduledTo.toInstant();
         Long roomId = learningRoom.getId();
         String email = accountRepository.findByUserId(owner.getUserId()).getEmail();
         taskScheduler.schedule(() -> {
+            LearningRoom learningRoom1 = learningRoomRepository.findById(roomId)
+                            .orElseThrow(() -> new NotFoundException("Can't find the room"));
+            learningRoom1.setLive(true);
             emailService.sendEmail(email, "Notify about the learning room you scheduled before", "Recently, you have scheduled a learning room, so it is the time right now, come to host the room!");
             NotificationDto notificationDto = notificationService.addNotification(new NotificationPostDto(owner.getUserId(), owner.getUserId(), "You have recently scheduled a learning room, so it is the time right now, come to host the room!", false, NotificationType.LEARNINGROOM , roomId, roomId));
-            simpMessagingTemplate.convertAndSend("topic/user/notification/" + owner.getUserId(), notificationDto);
-        }, scheduledInstant);
+            simpMessagingTemplate.convertAndSend("/topic/user/notification/" + owner.getUserId(), notificationDto);
+        }, new Date(scheduledTo.getTime()) );
 
 
         //schedule to notify room has ended
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(learningRoom.getCreatedAt());
-        calendar.add(Calendar.HOUR, learningRoomPostLaterDto.getDuration());
-        Instant endedInstant = calendar.getTime().toInstant();
         taskScheduler.schedule(() -> {
             LearningRoom learningRoom1 = learningRoomRepository.findById(roomId)
                     .orElseThrow(() -> new NotFoundException("Can't find the room"));
             learningRoom1.setLive(false);
             learningRoomRepository.save(learningRoom1);
             simpMessagingTemplate.convertAndSend("/topic/learning-room/" + roomId, new WebsocketType<>("end", "room time has exceeded the duration"));
-        }, endedInstant);
+        }, new Date(scheduledTo.getTime() + (long) duration*3600000));
         learningRoom = learningRoomRepository.save(learningRoom);
 
         return ResponseEntity.ok(new ApiResponse(ApiResponseStatus.SUCCESS, "created learning room later", learningRoomMapper.toDto(learningRoom)));
@@ -167,17 +166,17 @@ public class LearningRoomService implements ILearningRoomService {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("user not found"));
         if (!learningRoom.isLive()) {
-            return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(ApiResponseStatus.FAIL, "the room is not live", ""));
+            return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(ApiResponseStatus.FAIL, "The room is not live", ""));
         }
         if (participantRepository.checkIfExistedInAnotherRoom(userId, roomId)) {
-            return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(ApiResponseStatus.FAIL, "you are not able to join multiple room at once", ""));
+            return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(ApiResponseStatus.FAIL, "You are not able to join multiple room at once", ""));
         }
         if (learningRoom.getTopic().getEnglishLevel().getLevelId() > user.getEnglishLevel().getLevelId()) {
-            return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(ApiResponseStatus.FAIL, "your level is not suitable for this room", "level"));
+            return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(ApiResponseStatus.FAIL, "Your level is not suitable for this room", "level"));
         }
         if (learningRoom.isPrivate()) {
             if (!Objects.equals(learningRoom.getPassword(), joinLearningRoom.getPassword())) {
-                return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(ApiResponseStatus.FAIL, "password is not correct", "password"));
+                return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(ApiResponseStatus.FAIL, "Password is not correct", "password"));
             }
         }
         Participant participant = Participant.builder()

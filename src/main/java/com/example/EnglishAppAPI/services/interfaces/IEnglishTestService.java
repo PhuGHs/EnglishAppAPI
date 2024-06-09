@@ -12,8 +12,10 @@ public interface IEnglishTestService {
     ResponseEntity<?> createEnglishTest(EnglishTestPostDto englishTestPostDto);
     ResponseEntity<?> modifyEnglishTest(EnglishTestPostDto englishTestPostDto);
     ResponseEntity<?> deleteEnglishTest(Long id);
-    ResponseEntity<?> getEnglishTests();
+    ResponseEntity<?> getEnglishTests(Long levelId);
     ResponseEntity<?> getQuestions(Long testId);
     ResponseEntity<?> submitTest(SubmitTestDto submitTestDto);
     ResponseEntity<?> insertQuestionToEnglishTest(QuestionPostDto questionPostDto);
+    ResponseEntity<?> getUserTests(Long userId, Long levelId);
+    void insertTestsToUsers(Long userId);
 }

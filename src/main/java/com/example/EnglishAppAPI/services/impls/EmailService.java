@@ -14,13 +14,17 @@ public class EmailService {
     private String senderEmail;
 
     public void sendEmail(String emailTo, String subject, String body) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom(senderEmail);
-        message.setText(body);
-        message.setTo(emailTo);
-        message.setSubject(subject);
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(senderEmail);
+            message.setText(body);
+            message.setTo(emailTo);
+            message.setSubject(subject);
 
-        mailSender.send(message);
-        System.out.println("mail sent successfully");
+            mailSender.send(message);
+            System.out.println("mail sent successfully");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

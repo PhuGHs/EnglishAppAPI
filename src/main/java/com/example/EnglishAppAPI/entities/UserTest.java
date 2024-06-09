@@ -15,7 +15,8 @@ public class UserTest {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_test_id")
     private Long id;
-    @ManyToOne
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private UserEntity user;
 
@@ -25,4 +26,7 @@ public class UserTest {
 
     @Column(name = "score")
     private int score;
+
+    @Column(name = "is_passed")
+    private boolean isPassed;
 }

@@ -10,15 +10,11 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-public class EnglishTestDto {
-    @JsonProperty("english_test_id")
-    private Long englishTestId;
+public class EnglishLevelDto {
     @JsonProperty("english_level_id")
-    private Long englishLevelId;
-    @JsonProperty("number_of_questions")
-    private int numberOfQuestions;
-    @JsonProperty("title")
-    private String title;
+    private Long levelId;
+    @JsonProperty("level_name")
+    private String levelName;
     @JsonProperty("description")
     private String description;
 }
