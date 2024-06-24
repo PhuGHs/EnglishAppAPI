@@ -2,6 +2,7 @@ package com.example.EnglishAppAPI.controllers;
 
 import com.example.EnglishAppAPI.mapstruct.dtos.AgoraBody;
 import io.agora.media.RtcTokenBuilder;
+import io.agora.media.RtcTokenBuilder2;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
@@ -27,8 +28,8 @@ public class AgoraController {
             return "";
         }
 
-        RtcTokenBuilder token = new RtcTokenBuilder();
-        String result = token.buildTokenWithUid(appId, appCertificate, body.getChannelName(), body.getUid(), RtcTokenBuilder.Role.Role_Subscriber, privilegeExpirationInSeconds);
+        RtcTokenBuilder2 token = new RtcTokenBuilder2();
+        String result = token.buildTokenWithUid(appId, appCertificate, body.getChannelName(), body.getUid(), RtcTokenBuilder2.Role.ROLE_PUBLISHER, tokenExpirationInSeconds, privilegeExpirationInSeconds);
         return result;
     }
 }

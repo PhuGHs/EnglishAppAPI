@@ -3,7 +3,7 @@ version: '3.1'
 services:
   eng-elasticsearch:
     container_name: elas-tutorial
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.15.1
+    image: engcom.azurecr.io/docker.elastic.co/elasticsearch/elasticsearch
     volumes:
       - type: volume
         source: elasticsearch
@@ -19,19 +19,19 @@ services:
     networks:
       - my-network
 
-  eng-kibana:
-    container_name: kibana-tutorial
-    image: docker.elastic.co/kibana/kibana:7.15.1
-    ports:
-      - "5601:5601"
-    networks:
-      - my-network
-    depends_on:
-      - eng-elasticsearch
+#  eng-kibana:
+#    container_name: kibana-tutorial
+#    image: engcom.azurecr.io/docker.elastic.co/kibana/kibana
+#    ports:
+#      - "5601:5601"
+#    networks:
+#      - my-network
+#    depends_on:
+#      - eng-elasticsearch
 
   eng-mysql:
     container_name: eng-mysql
-    image: mysql:latest
+    image: engcom.azurecr.io/mysql
     restart: always
     environment:
       MYSQL_DATABASE: english_db
@@ -43,28 +43,26 @@ services:
     volumes:
       - mysql-data:/var/lib/mysql
 
-  eng-pma:
-    container_name: eng_pma
-    image: phpmyadmin
-    restart: always
-    ports:
-      - "7000:80"
-    networks:
-      - my-network
-    environment:
-      - PMA_ARBITRARY=1
+#  eng-pma:
+#    container_name: eng_pma
+#    image: engcom.azurecr.io/phpmyadmin
+#    restart: always
+#    ports:
+#      - "7000:80"
+#    networks:
+#      - my-network
+#    environment:
+#      - PMA_ARBITRARY=1
 
   eng-redis:
     container_name: redis-tutorial
-    image: redis:latest
+    image: engcom.azurecr.io/redis
     ports:
       - "6380:6379"
     networks:
       - my-network
   eng-app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: engcom.azurecr.io/englishappapi-eng-app
     container_name: eng-container
     ports:
       - "8080:8080"
@@ -72,7 +70,6 @@ services:
       - eng-elasticsearch
       - eng-redis
       - eng-mysql
-      - eng-pma
     environment:
       MYSQL_HOST: eng-mysql
       MYSQL_USER: root
